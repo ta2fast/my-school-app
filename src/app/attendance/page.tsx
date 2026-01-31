@@ -3,9 +3,8 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ChevronLeft, ChevronRight, Save, Calendar as CalendarIcon, Table as TableIcon, CheckCircle2, Circle } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Save, Calendar as CalendarIcon, Table as TableIcon, CheckCircle2 } from 'lucide-react'
 
 interface Student {
     id: string
