@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { AccountingDashboard } from '@/components/AccountingDashboard'
 import { TransactionForm } from '@/components/TransactionForm'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Plus, Receipt, Calendar, Tag, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Receipt, Calendar, Tag, ChevronLeft, ChevronRight, Edit2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -23,6 +23,8 @@ export default function AccountingPage() {
     const [transactions, setTransactions] = useState<Transaction[]>([])
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
+    const [editingTx, setEditingTx] = useState<Transaction | null>(null)
+    const [defaultType, setDefaultType] = useState<'income' | 'expense'>('income')
     const [stats, setStats] = useState({ balance: 0, incomeTotal: 0, expenseTotal: 0 })
     const [currentMonth, setCurrentMonth] = useState(() => {
         const now = new Date()
@@ -72,19 +74,42 @@ export default function AccountingPage() {
         fetchTransactions()
     }, [fetchTransactions])
 
-    const handleAddTransaction = async (data: any) => {
+    const handleUpsertTransaction = async (data: any) => {
         setLoading(true)
         try {
             const { error } = await supabase
                 .from('transactions')
-                .insert([data])
+                .upsert([data])
 
             if (error) throw error
             setShowForm(false)
+            setEditingTx(null)
             fetchTransactions()
         } catch (error: any) {
-            console.error('Error adding transaction:', error)
+            console.error('Error saving transaction:', error)
             alert('保存に失敗しました: ' + error.message)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleDeleteTransaction = async (id: string) => {
+        if (!confirm('この取引を削除しますか？')) return
+
+        setLoading(true)
+        try {
+            const { error } = await supabase
+                .from('transactions')
+                .delete()
+                .eq('id', id)
+
+            if (error) throw error
+            setShowForm(false)
+            setEditingTx(null)
+            fetchTransactions()
+        } catch (error: any) {
+            console.error('Error deleting transaction:', error)
+            alert('削除に失敗しました: ' + error.message)
         } finally {
             setLoading(false)
         }
@@ -96,6 +121,24 @@ export default function AccountingPage() {
 
     const changeMonth = (delta: number) => {
         setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + delta, 1))
+    }
+
+    const openForAdd = (type: 'income' | 'expense') => {
+        setEditingTx(null)
+        setDefaultType(type)
+        setShowForm(true)
+        // Scroll to form
+        setTimeout(() => {
+            window.scrollTo({ top: 120, behavior: 'smooth' })
+        }, 100)
+    }
+
+    const openForEdit = (tx: Transaction) => {
+        setEditingTx(tx)
+        setShowForm(true)
+        setTimeout(() => {
+            window.scrollTo({ top: 120, behavior: 'smooth' })
+        }, 100)
     }
 
     const monthLabel = currentMonth.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long' })
@@ -113,14 +156,6 @@ export default function AccountingPage() {
                     <h1 className="text-3xl font-black tracking-tighter text-foreground uppercase italic">Accounting</h1>
                     <p className="text-xs font-bold text-muted-foreground tracking-widest uppercase">Team Treasury Management</p>
                 </div>
-                {!showForm && (
-                    <Button
-                        onClick={() => setShowForm(true)}
-                        className="bg-indigo-600 hover:bg-indigo-700 rounded-full h-12 w-12 p-0 shadow-lg shadow-indigo-600/20"
-                    >
-                        <Plus className="h-6 w-6" />
-                    </Button>
-                )}
             </header>
 
             <div className="space-y-6">
@@ -148,16 +183,24 @@ export default function AccountingPage() {
                         balance={stats.balance}
                         incomeTotal={stats.incomeTotal}
                         expenseTotal={stats.expenseTotal}
+                        onIncomeClick={() => openForAdd('income')}
+                        onExpenseClick={() => openForAdd('expense')}
                     />
                 )}
 
                 {showForm && (
                     <div className="animate-in slide-in-from-top-4 duration-300">
                         <TransactionForm
-                            onSubmit={handleAddTransaction}
-                            onCancel={() => setShowForm(false)}
+                            onSubmit={handleUpsertTransaction}
+                            onDelete={handleDeleteTransaction}
+                            onCancel={() => {
+                                setShowForm(false)
+                                setEditingTx(null)
+                            }}
                             loading={loading}
                             titleSuggestions={titleSuggestions}
+                            initialData={editingTx}
+                            defaultType={defaultType}
                         />
                     </div>
                 )}
@@ -175,10 +218,10 @@ export default function AccountingPage() {
                             Array.from({ length: 5 }).map((_, i) => (
                                 <Skeleton key={i} className="h-20 w-full rounded-xl" />
                             ))
-                        ) : transactions.length > 0 ? (
-                            transactions.map((tx) => (
-                                <div key={tx.id} className="group flex items-center justify-between p-4 bg-muted/40 hover:bg-muted/80 border border-border/50 rounded-2xl transition-all active:scale-[0.98]">
-                                    <div className="flex flex-col gap-1">
+                        ) : filteredTransactions.length > 0 ? (
+                            filteredTransactions.map((tx) => (
+                                <div key={tx.id} className="group flex items-center justify-between p-4 bg-muted/20 hover:bg-muted/40 border border-border/30 rounded-2xl transition-all">
+                                    <div className="flex flex-col gap-1 flex-1">
                                         <div className="flex items-center gap-2">
                                             <span className={cn(
                                                 "text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter",
@@ -194,11 +237,21 @@ export default function AccountingPage() {
                                         <h3 className="font-bold text-sm leading-none">{tx.title}</h3>
                                         {tx.memo && <p className="text-xs text-muted-foreground italic truncate max-w-[150px]">{tx.memo}</p>}
                                     </div>
-                                    <div className={cn(
-                                        "text-lg font-mono font-black tabular-nums",
-                                        tx.type === 'income' ? "text-emerald-500" : "text-rose-500"
-                                    )}>
-                                        {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
+                                    <div className="flex items-center gap-4">
+                                        <div className={cn(
+                                            "text-lg font-mono font-black tabular-nums",
+                                            tx.type === 'income' ? "text-emerald-500" : "text-rose-500"
+                                        )}>
+                                            {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
+                                        </div>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8 text-muted-foreground hover:text-indigo-400"
+                                            onClick={() => openForEdit(tx)}
+                                        >
+                                            <Edit2 className="h-4 w-4" />
+                                        </Button>
                                     </div>
                                 </div>
                             ))
