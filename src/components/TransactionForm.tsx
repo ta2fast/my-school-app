@@ -11,36 +11,42 @@ const EXPENSE_CATEGORIES = ['会場代', '備品購入', '広告費', '交通費
 
 interface TransactionFormProps {
     onSubmit: (data: any) => Promise<void>
+    onDelete?: (id: string) => Promise<void>
     onCancel: () => void
     loading: boolean
     titleSuggestions: string[]
+    initialData?: any // For editing
+    defaultType?: 'income' | 'expense'
 }
 
-export function TransactionForm({ onSubmit, onCancel, loading, titleSuggestions }: TransactionFormProps) {
-    const [type, setType] = useState<'income' | 'expense'>('income')
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0])
-    const [title, setTitle] = useState('')
-    const [amount, setAmount] = useState('')
-    const [memo, setMemo] = useState('')
+export function TransactionForm({ onSubmit, onDelete, onCancel, loading, titleSuggestions, initialData, defaultType }: TransactionFormProps) {
+    const [type, setType] = useState<'income' | 'expense'>(initialData?.type || defaultType || 'income')
+    const [date, setDate] = useState(initialData?.date || new Date().toISOString().split('T')[0])
+    const [title, setTitle] = useState(initialData?.title || '')
+    const [amount, setAmount] = useState(initialData?.amount?.toString() || '')
+    const [memo, setMemo] = useState(initialData?.memo || '')
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         await onSubmit({
+            id: initialData?.id, // Include ID if editing
             date,
             type,
             title,
             amount: parseInt(amount),
-            category: 'なし', // Default category since it's removed from UI
+            category: initialData?.category || 'なし',
             memo
         })
-        // Reset form on success
-        setTitle('')
-        setAmount('')
-        setMemo('')
     }
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4 bg-muted/50 p-6 rounded-2xl border border-border mt-4">
+            <div className="flex justify-between items-center mb-2">
+                <h3 className="font-black uppercase tracking-tighter text-indigo-500">
+                    {initialData ? '取引を編集' : (type === 'income' ? '収入を記録' : '支出を記録')}
+                </h3>
+            </div>
+
             <div className="flex gap-2 p-1 bg-background border border-border rounded-xl mb-4">
                 <Button
                     type="button"
@@ -121,10 +127,23 @@ export function TransactionForm({ onSubmit, onCancel, loading, titleSuggestions 
             <div className="flex gap-3 pt-4">
                 <Button type="submit" className="flex-1 h-12 text-lg font-bold bg-foreground text-background" disabled={loading}>
                     <Save className="h-5 w-5 mr-2" />
-                    {loading ? '保存中...' : '記録を保存'}
+                    {loading ? '保存中...' : '保存'}
                 </Button>
+
+                {initialData && onDelete && (
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        className="h-12 w-12"
+                        onClick={() => onDelete(initialData.id)}
+                        disabled={loading}
+                    >
+                        <X className="h-5 w-5 text-white" />
+                    </Button>
+                )}
+
                 <Button type="button" variant="outline" className="h-12 w-12" onClick={onCancel}>
-                    <X className="h-5 w-5" />
+                    {!initialData ? <X className="h-5 w-5" /> : '閉じる'}
                 </Button>
             </div>
         </form>

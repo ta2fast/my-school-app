@@ -6,9 +6,11 @@ interface AccountingDashboardProps {
     balance: number
     incomeTotal: number
     expenseTotal: number
+    onIncomeClick?: () => void
+    onExpenseClick?: () => void
 }
 
-export function AccountingDashboard({ balance, incomeTotal, expenseTotal }: AccountingDashboardProps) {
+export function AccountingDashboard({ balance, incomeTotal, expenseTotal, onIncomeClick, onExpenseClick }: AccountingDashboardProps) {
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY', currencyDisplay: 'name' })
             .format(amount)
@@ -28,16 +30,22 @@ export function AccountingDashboard({ balance, incomeTotal, expenseTotal }: Acco
 
             {/* Income & Expense Tiny Grid */}
             <div className="grid grid-cols-2 gap-3 font-mono">
-                <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl flex flex-col items-center text-center">
+                <button
+                    onClick={onIncomeClick}
+                    className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl flex flex-col items-center text-center transition-all hover:bg-emerald-500/20 active:scale-95 cursor-pointer"
+                >
                     <ArrowDownCircle className="h-5 w-5 text-emerald-500 mb-2" />
                     <p className="text-[10px] uppercase font-bold text-emerald-500/70">今月の収入</p>
                     <p className="text-lg font-bold text-emerald-400">+{formatCurrency(incomeTotal)}</p>
-                </div>
-                <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-2xl flex flex-col items-center text-center">
+                </button>
+                <button
+                    onClick={onExpenseClick}
+                    className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-2xl flex flex-col items-center text-center transition-all hover:bg-rose-500/20 active:scale-95 cursor-pointer"
+                >
                     <ArrowUpCircle className="h-5 w-5 text-rose-500 mb-2" />
                     <p className="text-[10px] uppercase font-bold text-rose-500/70">今月の支出</p>
                     <p className="text-lg font-bold text-rose-400">-{formatCurrency(expenseTotal)}</p>
-                </div>
+                </button>
             </div>
         </div>
     )
