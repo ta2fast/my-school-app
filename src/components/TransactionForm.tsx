@@ -134,11 +134,11 @@ export function TransactionForm({ onSubmit, onDelete, onCancel, loading, titleSu
                     <Button
                         type="button"
                         variant="destructive"
-                        className="h-12 w-12"
+                        className="h-12 px-6 font-bold"
                         onClick={() => onDelete(initialData.id)}
                         disabled={loading}
                     >
-                        <X className="h-5 w-5 text-white" />
+                        削除
                     </Button>
                 )}
 

@@ -222,18 +222,10 @@ export default function AccountingPage() {
                             filteredTransactions.map((tx) => (
                                 <div key={tx.id} className="group flex items-center justify-between p-4 bg-muted/20 hover:bg-muted/40 border border-border/30 rounded-2xl transition-all">
                                     <div className="flex flex-col gap-1 flex-1">
-                                        <div className="flex items-center gap-2">
-                                            <span className={cn(
-                                                "text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter",
-                                                tx.type === 'income' ? "bg-emerald-500/20 text-emerald-500" : "bg-rose-500/20 text-rose-500"
-                                            )}>
-                                                {tx.category}
-                                            </span>
-                                            <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-1">
-                                                <Calendar className="h-3 w-3" />
-                                                {tx.date}
-                                            </span>
-                                        </div>
+                                        <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-1">
+                                            <Calendar className="h-3 w-3" />
+                                            {tx.date}
+                                        </span>
                                         <h3 className="font-bold text-sm leading-none">{tx.title}</h3>
                                         {tx.memo && <p className="text-xs text-muted-foreground italic truncate max-w-[150px]">{tx.memo}</p>}
                                     </div>
