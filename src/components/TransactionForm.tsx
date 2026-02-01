@@ -13,14 +13,14 @@ interface TransactionFormProps {
     onSubmit: (data: any) => Promise<void>
     onCancel: () => void
     loading: boolean
+    titleSuggestions: string[]
 }
 
-export function TransactionForm({ onSubmit, onCancel, loading }: TransactionFormProps) {
+export function TransactionForm({ onSubmit, onCancel, loading, titleSuggestions }: TransactionFormProps) {
     const [type, setType] = useState<'income' | 'expense'>('income')
     const [date, setDate] = useState(new Date().toISOString().split('T')[0])
     const [title, setTitle] = useState('')
     const [amount, setAmount] = useState('')
-    const [category, setCategory] = useState(INCOME_CATEGORIES[0])
     const [memo, setMemo] = useState('')
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -30,7 +30,7 @@ export function TransactionForm({ onSubmit, onCancel, loading }: TransactionForm
             type,
             title,
             amount: parseInt(amount),
-            category,
+            category: 'なし', // Default category since it's removed from UI
             memo
         })
         // Reset form on success
@@ -46,10 +46,7 @@ export function TransactionForm({ onSubmit, onCancel, loading }: TransactionForm
                     type="button"
                     variant={type === 'income' ? 'default' : 'ghost'}
                     className={`flex-1 gap-2 h-10 rounded-lg ${type === 'income' ? 'bg-emerald-600 hover:bg-emerald-700' : ''}`}
-                    onClick={() => {
-                        setType('income')
-                        setCategory(INCOME_CATEGORIES[0])
-                    }}
+                    onClick={() => setType('income')}
                 >
                     <PlusCircle className="h-4 w-4" />
                     収入
@@ -58,10 +55,7 @@ export function TransactionForm({ onSubmit, onCancel, loading }: TransactionForm
                     type="button"
                     variant={type === 'expense' ? 'destructive' : 'ghost'}
                     className={`flex-1 gap-2 h-10 rounded-lg ${type === 'expense' ? 'bg-rose-600 hover:bg-rose-700' : ''}`}
-                    onClick={() => {
-                        setType('expense')
-                        setCategory(EXPENSE_CATEGORIES[0])
-                    }}
+                    onClick={() => setType('expense')}
                 >
                     <MinusCircle className="h-4 w-4" />
                     支出
@@ -73,7 +67,8 @@ export function TransactionForm({ onSubmit, onCancel, loading }: TransactionForm
                     <Label htmlFor="t-date">日付</Label>
                     <Input
                         id="t-date"
-                        type="date"
+                        type="text"
+                        placeholder="2024-02-01"
                         value={date}
                         onChange={(e) => setDate(e.target.value)}
                         required
@@ -103,21 +98,13 @@ export function TransactionForm({ onSubmit, onCancel, loading }: TransactionForm
                     onChange={(e) => setTitle(e.target.value)}
                     required
                     className="h-11"
+                    list="title-suggestions"
                 />
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="t-category">カテゴリ</Label>
-                <select
-                    id="t-category"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                    {(type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map((cat) => (
-                        <option key={cat} value={cat}>{cat}</option>
+                <datalist id="title-suggestions">
+                    {titleSuggestions.map((suggestion) => (
+                        <option key={suggestion} value={suggestion} />
                     ))}
-                </select>
+                </datalist>
             </div>
 
             <div className="space-y-2">

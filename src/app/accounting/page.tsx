@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { AccountingDashboard } from '@/components/AccountingDashboard'
 import { TransactionForm } from '@/components/TransactionForm'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Plus, Receipt, Calendar, Tag } from 'lucide-react'
+import { Plus, Receipt, Calendar, Tag, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -24,6 +24,11 @@ export default function AccountingPage() {
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
     const [stats, setStats] = useState({ balance: 0, incomeTotal: 0, expenseTotal: 0 })
+    const [currentMonth, setCurrentMonth] = useState(() => {
+        const now = new Date()
+        return new Date(now.getFullYear(), now.getMonth(), 1)
+    })
+    const [titleSuggestions, setTitleSuggestions] = useState<string[]>([])
 
     const fetchTransactions = useCallback(async () => {
         try {
@@ -37,17 +42,23 @@ export default function AccountingPage() {
             const txs = data || []
             setTransactions(txs)
 
-            // Calculate stats
+            // 履歴から重複を除いたタイトルを取得
+            const uniqueTitles = Array.from(new Set(txs.map(t => t.title))).filter(Boolean) as string[]
+            setTitleSuggestions(uniqueTitles)
+
+            // 全体の残高計算
             const balance = txs.reduce((acc, curr) =>
                 curr.type === 'income' ? acc + curr.amount : acc - curr.amount, 0)
 
-            // This month's stats
-            const now = new Date()
-            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+            // 選択された月の集計
+            const year = currentMonth.getFullYear()
+            const month = currentMonth.getMonth()
+            const startOfMonth = new Date(year, month, 1).toISOString().split('T')[0]
+            const endOfMonth = new Date(year, month + 1, 0).toISOString().split('T')[0]
 
-            const thisMonthTxs = txs.filter(t => t.date >= startOfMonth)
-            const incomeTotal = thisMonthTxs.filter(t => t.type === 'income').reduce((acc, curr) => acc + curr.amount, 0)
-            const expenseTotal = thisMonthTxs.filter(t => t.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0)
+            const monthTxs = txs.filter(t => t.date >= startOfMonth && t.date <= endOfMonth)
+            const incomeTotal = monthTxs.filter(t => t.type === 'income').reduce((acc, curr) => acc + curr.amount, 0)
+            const expenseTotal = monthTxs.filter(t => t.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0)
 
             setStats({ balance, incomeTotal, expenseTotal })
         } catch (error) {
@@ -55,7 +66,7 @@ export default function AccountingPage() {
         } finally {
             setLoading(false)
         }
-    }, [])
+    }, [currentMonth])
 
     useEffect(() => {
         fetchTransactions()
@@ -83,6 +94,18 @@ export default function AccountingPage() {
         return new Intl.NumberFormat('ja-JP').format(amount) + '円'
     }
 
+    const changeMonth = (delta: number) => {
+        setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + delta, 1))
+    }
+
+    const monthLabel = currentMonth.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long' })
+
+    // 表示用のフィルタリング
+    const filteredTransactions = transactions.filter(t => {
+        const d = new Date(t.date)
+        return d.getFullYear() === currentMonth.getFullYear() && d.getMonth() === currentMonth.getMonth()
+    })
+
     return (
         <div className="p-4 pt-6 min-h-screen bg-background text-foreground pb-24">
             <header className="mb-6 flex justify-between items-end">
@@ -101,6 +124,17 @@ export default function AccountingPage() {
             </header>
 
             <div className="space-y-6">
+                {/* 月の選択 UI */}
+                <div className="flex items-center justify-between bg-muted/40 p-2 rounded-2xl border border-border/50">
+                    <Button variant="ghost" size="icon" onClick={() => changeMonth(-1)}>
+                        <ChevronLeft className="h-5 w-5" />
+                    </Button>
+                    <span className="font-black text-sm tracking-tight">{monthLabel}</span>
+                    <Button variant="ghost" size="icon" onClick={() => changeMonth(1)}>
+                        <ChevronRight className="h-5 w-5" />
+                    </Button>
+                </div>
+
                 {loading && transactions.length === 0 ? (
                     <div className="space-y-4">
                         <Skeleton className="h-40 w-full rounded-3xl" />
@@ -123,6 +157,7 @@ export default function AccountingPage() {
                             onSubmit={handleAddTransaction}
                             onCancel={() => setShowForm(false)}
                             loading={loading}
+                            titleSuggestions={titleSuggestions}
                         />
                     </div>
                 )}
@@ -131,7 +166,7 @@ export default function AccountingPage() {
                     <div className="flex items-center justify-between px-1">
                         <h2 className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                             <Receipt className="h-4 w-4" />
-                            Transaction History
+                            {monthLabel} の履歴
                         </h2>
                     </div>
 
