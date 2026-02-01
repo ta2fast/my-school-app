@@ -76,24 +76,26 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
                 />
             </div>
             <div className="space-y-2">
-                <Label htmlFor="dob">生年月日</Label>
+                <Label htmlFor="st-birth-date">生年月日</Label>
                 <Input
-                    id="dob"
-                    type="text"
+                    id="st-birth-date"
+                    type="tel"
                     inputMode="numeric"
-                    placeholder="1990-01-01"
+                    autoComplete="off"
+                    placeholder="20150101"
                     value={birthDate}
                     onChange={(e) => setBirthDate(e.target.value)}
                     className="h-12"
                 />
             </div>
             <div className="space-y-2">
-                <Label htmlFor="emergency">緊急連絡先 (電話番号)</Label>
+                <Label htmlFor="st-emergency-phone">緊急連絡先 (電話番号)</Label>
                 <Input
-                    id="emergency"
-                    type="text"
+                    id="st-emergency-phone"
+                    type="tel"
                     inputMode="numeric"
-                    placeholder="090-0000-0000"
+                    autoComplete="off"
+                    placeholder="09000000000"
                     value={emergencyContact}
                     onChange={(e) => setEmergencyContact(e.target.value)}
                     className="h-12"
