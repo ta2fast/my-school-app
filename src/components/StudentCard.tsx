@@ -98,12 +98,17 @@ export function StudentCard({ student }: StudentCardProps) {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <EditStudentDrawer student={student} />
+                        <div onClick={(e) => e.stopPropagation()}>
+                            <EditStudentDrawer student={student} />
+                        </div>
                         <Button
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                            onClick={handleDelete}
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                handleDelete()
+                            }}
                         >
                             <Trash2 className="h-4 w-4" />
                         </Button>
