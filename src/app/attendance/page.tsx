@@ -523,7 +523,7 @@ export default function AttendancePage() {
                                                     </td>
                                                 )
                                             })}
-                                            <td className="p-1 border border-border text-center font-bold bg-orange-500/10 text-foreground">{gridData.totals[ins.id] || 0}</td>
+                                            <td className="p-1 border border-border text-center font-bold bg-muted/30 text-foreground">{gridData.totals[ins.id] || 0}</td>
                                         </tr>
                                     ))}
 
