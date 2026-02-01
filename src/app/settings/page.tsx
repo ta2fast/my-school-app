@@ -3,7 +3,8 @@
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { AddStudentDrawer } from '@/components/AddStudentDrawer'
 import { InstructorManagementDrawer } from '@/components/InstructorManagementDrawer'
-import { Settings, UserPlus, Users, Moon } from 'lucide-react'
+import { NavOrderSettings } from '@/components/NavOrderSettings'
+import { Settings, UserPlus, Users, Moon, Layout } from 'lucide-react'
 
 export default function SettingsPage() {
     return (
@@ -31,6 +32,20 @@ export default function SettingsPage() {
                         </div>
                         <ThemeToggle />
                     </div>
+                </div>
+
+                {/* ナビゲーション順序 */}
+                <div className="bg-card border border-border rounded-xl p-4">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                            <Layout className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <div>
+                            <h3 className="font-semibold text-foreground">メニューの並び順</h3>
+                            <p className="text-xs text-muted-foreground">下のメニューとスワイプの順番を変更します</p>
+                        </div>
+                    </div>
+                    <NavOrderSettings />
                 </div>
 
                 {/* 生徒管理 */}

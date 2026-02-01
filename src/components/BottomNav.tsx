@@ -5,7 +5,10 @@ import { usePathname } from 'next/navigation'
 import { Users, CalendarCheck, Wallet, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const navItems = [
+import { useNavigation } from './NavigationProvider'
+import { useMemo } from 'react'
+
+const ALL_NAV_ITEMS = [
     { label: '名簿', icon: Users, href: '/' },
     { label: '出欠', icon: CalendarCheck, href: '/attendance' },
     { label: '会計', icon: Wallet, href: '/accounting' },
@@ -14,11 +17,18 @@ const navItems = [
 
 export function BottomNav() {
     const pathname = usePathname()
+    const { order } = useNavigation()
+
+    const sortedItems = useMemo(() => {
+        return [...ALL_NAV_ITEMS].sort((a, b) => {
+            return order.indexOf(a.href) - order.indexOf(b.href)
+        })
+    }, [order])
 
     return (
         <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border pb-safe">
             <div className="flex justify-around items-center h-16">
-                {navItems.map((item) => {
+                {sortedItems.map((item) => {
                     const isActive = pathname === item.href
                     return (
                         <Link
