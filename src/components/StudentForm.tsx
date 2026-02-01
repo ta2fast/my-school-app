@@ -11,6 +11,7 @@ interface StudentFormProps {
         furigana: string
         monthly_fee: number
         address?: string
+        gender?: string
         birth_date?: string
         emergency_contact?: string
         emergency_relationship?: string
@@ -24,6 +25,7 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
     const [name, setName] = useState(initialData?.name || '')
     const [furigana, setFurigana] = useState(initialData?.furigana || '')
     const [address, setAddress] = useState(initialData?.address || '')
+    const [gender, setGender] = useState(initialData?.gender || '')
     const [birthYear, setBirthYear] = useState(initialData?.birth_date?.split('-')[0] || '')
     const [birthMonth, setBirthMonth] = useState(initialData?.birth_date?.split('-')[1] || '')
     const [birthDay, setBirthDay] = useState(initialData?.birth_date?.split('-')[2] || '')
@@ -46,6 +48,7 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
         await onSubmit({
             name,
             furigana,
+            gender: gender || null,
             monthly_fee: 0,
             address: address || null,
             birth_date: bDate,
@@ -87,6 +90,27 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
                     onChange={(e) => setAddress(e.target.value)}
                     className="h-12"
                 />
+            </div>
+
+            <div className="space-y-2">
+                <Label>性別</Label>
+                <div className="flex gap-2">
+                    {[
+                        { label: '男性', value: 'male' },
+                        { label: '女性', value: 'female' },
+                        { label: '未設定', value: '' }
+                    ].map((item) => (
+                        <Button
+                            key={item.label}
+                            type="button"
+                            variant={gender === item.value ? 'default' : 'outline'}
+                            className="flex-1 h-12"
+                            onClick={() => setGender(item.value)}
+                        >
+                            {item.label}
+                        </Button>
+                    ))}
+                </div>
             </div>
 
             <div className="space-y-2">

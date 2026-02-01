@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { EditStudentDrawer } from './EditStudentDrawer'
+import { cn } from '@/lib/utils'
 
 interface StudentCardProps {
     student: {
@@ -9,6 +10,7 @@ interface StudentCardProps {
         furigana: string;
         monthly_fee: number;
         address?: string;
+        gender?: string;
         birth_date?: string;
         emergency_contact?: string;
         emergency_relationship?: string;
@@ -53,8 +55,13 @@ export function StudentCard({ student }: StudentCardProps) {
     }
 
     return (
-        <Card className="mb-2 overflow-hidden border shadow-sm hover:shadow-md transition-shadow rounded-xl">
-            <CardContent className="p-4">
+        <Card className={cn(
+            "mb-2 overflow-hidden border shadow-sm hover:shadow-md transition-shadow rounded-xl",
+            student.gender === 'male' ? 'bg-blue-500/5 border-blue-200/50' :
+                student.gender === 'female' ? 'bg-pink-500/5 border-pink-200/50' :
+                    'bg-background border-border'
+        )}>
+            <CardContent className="py-2 px-4">
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 space-y-2">
                         <div>

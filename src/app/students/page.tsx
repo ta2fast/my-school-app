@@ -11,6 +11,7 @@ interface Student {
     furigana: string
     monthly_fee: number
     address?: string
+    gender?: string
     birth_date?: string
     emergency_contact?: string
     emergency_relationship?: string
