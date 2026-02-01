@@ -14,9 +14,13 @@ import {
     DrawerTrigger,
     DrawerFooter,
 } from '@/components/ui/drawer'
-import { UserPlus, Trash2, Users } from 'lucide-react'
+import { UserPlus, Trash2, Users, ChevronRight } from 'lucide-react'
 
-export function InstructorManagementDrawer() {
+interface InstructorManagementDrawerProps {
+    variant?: 'default' | 'settings'
+}
+
+export function InstructorManagementDrawer({ variant = 'default' }: InstructorManagementDrawerProps) {
     const [open, setOpen] = useState(false)
     const [instructors, setInstructors] = useState<any[]>([])
     const [name, setName] = useState('')
@@ -71,10 +75,17 @@ export function InstructorManagementDrawer() {
     return (
         <Drawer open={open} onOpenChange={setOpen}>
             <DrawerTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
-                    <Users className="h-4 w-4" />
-                    講師管理
-                </Button>
+                {variant === 'settings' ? (
+                    <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground">
+                        管理
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
+                ) : (
+                    <Button variant="outline" size="sm" className="gap-2">
+                        <Users className="h-4 w-4" />
+                        講師管理
+                    </Button>
+                )}
             </DrawerTrigger>
             <DrawerContent>
                 <div className="mx-auto w-full max-w-md h-[80vh] flex flex-col">

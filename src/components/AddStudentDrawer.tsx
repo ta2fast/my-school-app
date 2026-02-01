@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
     Drawer,
@@ -19,7 +19,11 @@ import { supabase } from '@/lib/supabase'
 
 import { StudentForm } from './StudentForm'
 
-export function AddStudentDrawer() {
+interface AddStudentDrawerProps {
+    variant?: 'default' | 'settings'
+}
+
+export function AddStudentDrawer({ variant = 'default' }: AddStudentDrawerProps) {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
 
@@ -46,9 +50,16 @@ export function AddStudentDrawer() {
     return (
         <Drawer open={open} onOpenChange={setOpen}>
             <DrawerTrigger asChild>
-                <Button size="icon" className="rounded-full w-12 h-12 shadow-lg fixed top-4 right-4 z-40">
-                    <Plus className="w-6 h-6" />
-                </Button>
+                {variant === 'settings' ? (
+                    <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground">
+                        追加
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
+                ) : (
+                    <Button size="icon" className="rounded-full w-12 h-12 shadow-lg fixed top-4 right-4 z-40">
+                        <Plus className="w-6 h-6" />
+                    </Button>
+                )}
             </DrawerTrigger>
             <DrawerContent>
                 <div className="mx-auto w-full max-w-sm overflow-y-auto max-h-[calc(80vh-2rem)] px-4">

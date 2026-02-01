@@ -2,13 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Users, CalendarCheck, Wallet } from 'lucide-react'
+import { Users, CalendarCheck, Wallet, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
     { label: '名簿', icon: Users, href: '/' },
     { label: '出欠', icon: CalendarCheck, href: '/attendance' },
     { label: '会計', icon: Wallet, href: '/accounting' },
+    { label: '設定', icon: Settings, href: '/settings' },
 ]
 
 export function BottomNav() {

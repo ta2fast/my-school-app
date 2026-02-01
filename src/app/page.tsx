@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { StudentCard } from '@/components/StudentCard'
-import { AddStudentDrawer } from '@/components/AddStudentDrawer'
 import { Skeleton } from '@/components/ui/skeleton'
 
 interface StudentCardProps {
@@ -53,13 +52,11 @@ export default function Home() {
   }, [])
 
   return (
-    <div className="p-4 pt-16">
+    <div className="p-4 pt-6">
       <header className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">名簿一覧</h1>
+        <h1 className="text-2xl font-bold text-foreground">名簿一覧</h1>
         <p className="text-sm text-muted-foreground">{students.length} 名の生徒</p>
       </header>
-
-      <AddStudentDrawer />
 
       <div className="space-y-1 pb-20">
         {loading ? (
@@ -73,10 +70,11 @@ export default function Home() {
         ) : (
           <div className="text-center py-20 text-muted-foreground border-2 border-dashed rounded-xl">
             生徒が登録されていません。<br />
-            右上の＋ボタンから追加してください。
+            設定ページから追加してください。
           </div>
         )}
       </div>
     </div>
   )
 }
+

@@ -12,8 +12,6 @@ interface Student {
     furigana: string
 }
 
-import { InstructorManagementDrawer } from '@/components/InstructorManagementDrawer'
-
 interface Instructor {
     id: string
     name: string
@@ -281,7 +279,6 @@ export default function AttendancePage() {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <h1 className="text-xl font-bold text-gray-900">出欠管理</h1>
-                            <InstructorManagementDrawer />
                         </div>
                         <div className="flex p-1 bg-gray-100 rounded-lg">
                             <Button
@@ -427,7 +424,7 @@ export default function AttendancePage() {
                             ) : instructors.length === 0 ? (
                                 <div className="text-center py-6 bg-gray-50 border border-dashed rounded-xl">
                                     <p className="text-gray-400 text-xs mb-2">講師が登録されていません</p>
-                                    <InstructorManagementDrawer />
+                                    <p className="text-[10px] text-muted-foreground italic">設定ページから登録してください</p>
                                 </div>
                             ) : (
                                 instructors.map(ins => {

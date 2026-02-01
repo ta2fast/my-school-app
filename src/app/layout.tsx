@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { BottomNav } from "@/components/BottomNav";
-import { ThemeToggle } from "@/components/ThemeToggle";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,10 +39,6 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-muted min-h-screen pb-20`}
       >
         <main className="max-w-md mx-auto min-h-screen relative shadow-lg bg-background">
-          {/* テーマ切り替えボタン */}
-          <div className="fixed top-4 right-20 z-50">
-            <ThemeToggle />
-          </div>
           {children}
           <BottomNav />
         </main>
