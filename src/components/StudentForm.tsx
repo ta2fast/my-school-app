@@ -34,10 +34,10 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
             name,
             furigana,
             monthly_fee: 0, // No longer used but kept for schema compatibility
-            address,
+            address: address || null,
             birth_date: birthDate || null,
-            emergency_contact: emergencyContact,
-            emergency_relationship: emergencyRelationship
+            emergency_contact: emergencyContact || null,
+            emergency_relationship: emergencyRelationship || null
         })
     }
 
