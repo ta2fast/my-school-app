@@ -30,6 +30,11 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
     const [emergencyContact, setEmergencyContact] = useState(initialData?.emergency_contact || '')
     const [emergencyRelationship, setEmergencyRelationship] = useState(initialData?.emergency_relationship || '')
 
+    const currentYear = new Date().getFullYear()
+    const years = Array.from({ length: 101 }, (_, i) => currentYear - i) // 100年前まで選択可能
+    const months = Array.from({ length: 12 }, (_, i) => i + 1)
+    const days = Array.from({ length: 31 }, (_, i) => i + 1)
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
@@ -87,38 +92,35 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
             <div className="space-y-2">
                 <span className="text-sm font-medium">生年月日</span>
                 <div className="flex gap-2">
-                    <div className="flex-1">
-                        <Input
-                            type="tel"
-                            inputMode="numeric"
-                            placeholder="年 (2015)"
+                    <div className="flex-[2]">
+                        <select
                             value={birthYear}
                             onChange={(e) => setBirthYear(e.target.value)}
-                            className="h-12"
-                            autoComplete="off"
-                        />
+                            className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            <option value="">年</option>
+                            {years.map(y => <option key={y} value={y}>{y}年</option>)}
+                        </select>
                     </div>
-                    <div className="w-20">
-                        <Input
-                            type="tel"
-                            inputMode="numeric"
-                            placeholder="月"
+                    <div className="flex-1">
+                        <select
                             value={birthMonth}
                             onChange={(e) => setBirthMonth(e.target.value)}
-                            className="h-12 text-center"
-                            autoComplete="off"
-                        />
+                            className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            <option value="">月</option>
+                            {months.map(m => <option key={m} value={m}>{m}月</option>)}
+                        </select>
                     </div>
-                    <div className="w-20">
-                        <Input
-                            type="tel"
-                            inputMode="numeric"
-                            placeholder="日"
+                    <div className="flex-1">
+                        <select
                             value={birthDay}
                             onChange={(e) => setBirthDay(e.target.value)}
-                            className="h-12 text-center"
-                            autoComplete="off"
-                        />
+                            className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            <option value="">日</option>
+                            {days.map(d => <option key={d} value={d}>{d}日</option>)}
+                        </select>
                     </div>
                 </div>
             </div>
