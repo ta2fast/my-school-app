@@ -272,19 +272,19 @@ export default function AttendancePage() {
     }
 
     return (
-        <div className="flex flex-col min-h-screen bg-white pb-24">
+        <div className="flex flex-col min-h-screen bg-background pb-24 text-foreground">
             {/* Header / Tabs */}
-            <div className="bg-white border-b sticky top-0 z-30 pt-4 px-4 shadow-sm">
+            <div className="bg-background border-b sticky top-0 z-30 pt-4 px-4 shadow-sm">
                 <div className="max-w-4xl mx-auto space-y-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <h1 className="text-xl font-bold text-gray-900">出欠管理</h1>
+                            <h1 className="text-xl font-bold text-foreground">出欠管理</h1>
                         </div>
-                        <div className="flex p-1 bg-gray-100 rounded-lg">
+                        <div className="flex p-1 bg-muted rounded-lg">
                             <Button
                                 variant={viewMode === 'daily' ? 'outline' : 'ghost'}
                                 size="sm"
-                                className={`rounded-md h-8 ${viewMode === 'daily' ? 'bg-white shadow-sm' : ''}`}
+                                className={`rounded-md h-8 ${viewMode === 'daily' ? 'bg-background shadow-sm' : ''}`}
                                 onClick={() => setViewMode('daily')}
                             >
                                 <CalendarIcon className="h-4 w-4 mr-2" />
@@ -293,7 +293,7 @@ export default function AttendancePage() {
                             <Button
                                 variant={viewMode === 'monthly' ? 'outline' : 'ghost'}
                                 size="sm"
-                                className={`rounded-md h-8 ${viewMode === 'monthly' ? 'bg-white shadow-sm' : ''}`}
+                                className={`rounded-md h-8 ${viewMode === 'monthly' ? 'bg-background shadow-sm' : ''}`}
                                 onClick={() => setViewMode('monthly')}
                             >
                                 <TableIcon className="h-4 w-4 mr-2" />
@@ -306,13 +306,13 @@ export default function AttendancePage() {
                     <div className="flex flex-col items-center gap-2 pb-3">
                         <div className="flex items-center justify-center gap-4">
                             {viewMode === 'daily' ? (
-                                <div className="flex items-center gap-2 bg-gray-50 rounded-full px-4 py-1.5 border">
+                                <div className="flex items-center gap-2 bg-muted rounded-full px-4 py-1.5 border border-border">
                                     <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => changeDate(-1)}>
                                         <ChevronLeft className="h-4 w-4" />
                                     </Button>
                                     <input
                                         type="date"
-                                        className="bg-transparent border-none text-sm font-bold focus:ring-0 w-32 text-center"
+                                        className="bg-transparent border-none text-sm font-bold focus:ring-0 w-32 text-center text-foreground invert dark:invert-0"
                                         value={selectedDate}
                                         onChange={(e) => setSelectedDate(e.target.value)}
                                     />
@@ -321,13 +321,13 @@ export default function AttendancePage() {
                                     </Button>
                                 </div>
                             ) : (
-                                <div className="flex items-center gap-2 bg-gray-50 rounded-full px-4 py-1.5 border">
+                                <div className="flex items-center gap-2 bg-muted rounded-full px-4 py-1.5 border border-border">
                                     <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => changeMonth(-1)}>
                                         <ChevronLeft className="h-4 w-4" />
                                     </Button>
                                     <input
                                         type="month"
-                                        className="bg-transparent border-none text-sm font-bold focus:ring-0 w-36 text-center"
+                                        className="bg-transparent border-none text-sm font-bold focus:ring-0 w-36 text-center text-foreground invert dark:invert-0"
                                         value={selectedMonth}
                                         onChange={(e) => setSelectedMonth(e.target.value)}
                                     />
@@ -345,7 +345,7 @@ export default function AttendancePage() {
                                         type="text"
                                         list="location-history"
                                         placeholder="実施場所を入力 (例: 公園、スタジオ)"
-                                        className="w-full bg-gray-50 border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                                        className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none text-foreground"
                                         value={dailyLocation}
                                         onChange={(e) => setDailyLocation(e.target.value)}
                                     />
@@ -361,7 +361,7 @@ export default function AttendancePage() {
                                             <button
                                                 key={loc}
                                                 type="button"
-                                                className="text-[10px] bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full transition-colors"
+                                                className="text-[10px] bg-muted hover:bg-secondary text-muted-foreground px-2 py-0.5 rounded-full transition-colors"
                                                 onClick={() => setDailyLocation(loc)}
                                             >
                                                 {loc}
@@ -393,18 +393,18 @@ export default function AttendancePage() {
                                     <div
                                         key={student.id}
                                         className={`flex items-center justify-between p-4 rounded-xl border transition-all cursor-pointer ${dailyStudentAttendance[student.id]
-                                            ? 'bg-green-50/50 border-green-100'
-                                            : 'bg-white border-gray-100 grayscale-[0.5]'
+                                            ? 'bg-green-500/10 border-green-500/50'
+                                            : 'bg-background border-border grayscale-[0.5]'
                                             }`}
                                         onClick={() => toggleDailyS(student.id)}
                                     >
                                         <div className="min-w-0">
                                             <p className="text-[10px] text-muted-foreground truncate leading-tight">{student.furigana}</p>
-                                            <h3 className="font-bold text-gray-900">{student.name}</h3>
+                                            <h3 className="font-bold text-foreground">{student.name}</h3>
                                         </div>
                                         <div className={`h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all ${dailyStudentAttendance[student.id]
                                             ? 'bg-green-600 border-green-600'
-                                            : 'bg-white border-gray-200'
+                                            : 'bg-background border-border'
                                             }`}>
                                             {dailyStudentAttendance[student.id] && <CheckCircle2 className="h-5 w-5 text-white" />}
                                         </div>
@@ -432,19 +432,19 @@ export default function AttendancePage() {
                                     return (
                                         <div
                                             key={ins.id}
-                                            className={`flex items-center justify-between p-4 rounded-xl border transition-all cursor-pointer ${status === 'present' ? 'bg-orange-50/50 border-orange-200' :
-                                                status === 'late' ? 'bg-yellow-50/50 border-yellow-200' :
-                                                    'bg-white border-gray-100 grayscale-[0.8]'
+                                            className={`flex items-center justify-between p-4 rounded-xl border transition-all cursor-pointer ${status === 'present' ? 'bg-orange-500/10 border-orange-500/50' :
+                                                status === 'late' ? 'bg-yellow-500/10 border-yellow-500/50' :
+                                                    'bg-background border-border grayscale-[0.8]'
                                                 }`}
                                             onClick={() => toggleDailyI(ins.id)}
                                         >
                                             <div className="min-w-0">
                                                 <p className="text-[10px] text-muted-foreground truncate leading-tight">{ins.furigana}</p>
-                                                <h3 className="font-bold text-gray-900">{ins.name}</h3>
+                                                <h3 className="font-bold text-foreground">{ins.name}</h3>
                                             </div>
                                             <div className={`h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all ${status === 'present' ? 'bg-orange-600 border-orange-600' :
                                                 status === 'late' ? 'bg-yellow-600 border-yellow-600' :
-                                                    'bg-white border-gray-200'
+                                                    'bg-background border-border'
                                                 }`}>
                                                 {status === 'present' ? <CheckCircle2 className="h-5 w-5 text-white" /> :
                                                     status === 'late' ? <span className="text-white font-bold text-sm">▲</span> : null}
@@ -457,27 +457,27 @@ export default function AttendancePage() {
                     </div>
                 ) : (
                     <div className="h-full flex flex-col pt-4 overflow-hidden">
-                        <div className="flex-1 overflow-auto border rounded-xl mx-4 mb-4 bg-white shadow-sm">
+                        <div className="flex-1 overflow-auto border border-border rounded-xl mx-4 mb-4 bg-background shadow-sm">
                             <table className="w-full border-collapse text-[10px]">
-                                <thead className="sticky top-0 z-20 bg-gray-50 shadow-sm">
+                                <thead className="sticky top-0 z-20 bg-muted shadow-sm">
                                     <tr>
-                                        <th className="sticky left-0 z-30 bg-gray-100 p-2 border text-left font-bold min-w-[80px]">氏名</th>
+                                        <th className="sticky left-0 z-30 bg-muted p-2 border border-border text-left font-bold min-w-[80px] text-foreground">氏名</th>
                                         {gridData.activeDates.map(dateStr => (
-                                            <th key={dateStr} className="p-1 border text-center font-medium min-w-[40px]">
+                                            <th key={dateStr} className="p-1 border border-border text-center font-medium min-w-[40px] text-foreground">
                                                 {new Date(dateStr).getDate()}日
                                             </th>
                                         ))}
-                                        <th className="p-2 border text-center font-bold bg-primary/10 text-primary min-w-[50px]">合計</th>
+                                        <th className="p-2 border border-border text-center font-bold bg-primary/20 text-primary min-w-[50px]">合計</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {/* Student Header Rows */}
-                                    <tr className="bg-blue-50/30 font-bold text-[8px] text-blue-600">
-                                        <td colSpan={gridData.activeDates.length + 2} className="px-2 py-1">生徒</td>
+                                    <tr className="bg-blue-500/10 font-bold text-[8px] text-blue-600 dark:text-blue-400">
+                                        <td colSpan={gridData.activeDates.length + 2} className="px-2 py-1 border border-border">生徒</td>
                                     </tr>
                                     {students.map(student => (
-                                        <tr key={student.id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="sticky left-0 z-10 bg-white p-2 border font-bold truncate max-w-[100px] border-r-gray-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
+                                        <tr key={student.id} className="hover:bg-muted/50 transition-colors">
+                                            <td className="sticky left-0 z-10 bg-background p-2 border border-border font-bold truncate max-w-[100px] border-r-border shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] text-foreground">
                                                 {student.name}
                                             </td>
                                             {gridData.activeDates.map(dateStr => {
@@ -486,26 +486,26 @@ export default function AttendancePage() {
                                                 return (
                                                     <td
                                                         key={dateStr}
-                                                        className="p-1 border text-center cursor-pointer hover:bg-green-50/50"
+                                                        className="p-1 border border-border text-center cursor-pointer hover:bg-green-500/10"
                                                         onClick={() => toggleMonthlyStatus(student.id, dateStr, false)}
                                                     >
-                                                        {status === 'present' ? <span className="text-green-600 font-bold text-sm">●</span> : status === 'absent' ? <span className="text-gray-200">・</span> : null}
+                                                        {status === 'present' ? <span className="text-green-600 font-bold text-sm">●</span> : status === 'absent' ? <span className="text-muted-foreground/30">・</span> : null}
                                                     </td>
                                                 )
                                             })}
-                                            <td className="p-1 border text-center font-bold bg-gray-50/50">{gridData.totals[student.id] || 0}</td>
+                                            <td className="p-1 border border-border text-center font-bold bg-muted/30 text-foreground">{gridData.totals[student.id] || 0}</td>
                                         </tr>
                                     ))}
 
                                     {/* Instructor Header Rows */}
                                     {instructors.length > 0 && (
-                                        <tr className="bg-orange-50/30 font-bold text-[8px] text-orange-600">
-                                            <td colSpan={gridData.activeDates.length + 2} className="px-2 py-1">講師</td>
+                                        <tr className="bg-orange-500/10 font-bold text-[8px] text-orange-600 dark:text-orange-400">
+                                            <td colSpan={gridData.activeDates.length + 2} className="px-2 py-1 border border-border">講師</td>
                                         </tr>
                                     )}
                                     {instructors.map(ins => (
-                                        <tr key={ins.id} className="hover:bg-orange-50/30 transition-colors bg-orange-50/10">
-                                            <td className="sticky left-0 z-10 bg-white p-2 border font-bold truncate max-w-[100px] border-r-gray-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
+                                        <tr key={ins.id} className="hover:bg-orange-500/10 transition-colors bg-orange-500/5">
+                                            <td className="sticky left-0 z-10 bg-background p-2 border border-border font-bold truncate max-w-[100px] border-r-border shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] text-foreground">
                                                 {ins.name}
                                             </td>
                                             {gridData.activeDates.map(dateStr => {
@@ -514,26 +514,26 @@ export default function AttendancePage() {
                                                 return (
                                                     <td
                                                         key={dateStr}
-                                                        className="p-1 border text-center cursor-pointer hover:bg-orange-100/50"
+                                                        className="p-1 border border-border text-center cursor-pointer hover:bg-orange-500/10"
                                                         onClick={() => toggleMonthlyStatus(ins.id, dateStr, true)}
                                                     >
                                                         {status === 'present' ? <span className="text-orange-600 font-bold text-sm">●</span> :
                                                             status === 'late' ? <span className="text-yellow-600 font-bold text-sm">▲</span> :
-                                                                status === 'absent' ? <span className="text-gray-300">・</span> : null}
+                                                                status === 'absent' ? <span className="text-muted-foreground/30">・</span> : null}
                                                     </td>
                                                 )
                                             })}
-                                            <td className="p-1 border text-center font-bold bg-orange-50/50">{gridData.totals[ins.id] || 0}</td>
+                                            <td className="p-1 border border-border text-center font-bold bg-orange-500/10 text-foreground">{gridData.totals[ins.id] || 0}</td>
                                         </tr>
                                     ))}
 
                                     {/* Location Row */}
-                                    <tr className="bg-gray-100/50">
-                                        <td className="sticky left-0 z-10 bg-gray-100 p-2 border font-bold text-[8px] text-muted-foreground">実施場所</td>
+                                    <tr className="bg-muted/50 text-foreground">
+                                        <td className="sticky left-0 z-10 bg-muted p-2 border border-border font-bold text-[8px] text-muted-foreground">実施場所</td>
                                         {gridData.activeDates.map(dateStr => (
-                                            <td key={dateStr} className="p-1 border text-center text-[8px] leading-tight text-gray-500">{gridData.locations[dateStr] || "-"}</td>
+                                            <td key={dateStr} className="p-1 border border-border text-center text-[8px] leading-tight text-muted-foreground">{gridData.locations[dateStr] || "-"}</td>
                                         ))}
-                                        <td className="border"></td>
+                                        <td className="border border-border"></td>
                                     </tr>
                                 </tbody>
                             </table>

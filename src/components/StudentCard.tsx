@@ -59,14 +59,14 @@ export function StudentCard({ student }: StudentCardProps) {
                     <div className="flex-1 space-y-2">
                         <div>
                             <p className="text-[10px] text-muted-foreground">{student.furigana}</p>
-                            <h3 className="text-lg font-bold text-gray-900">{student.name}</h3>
+                            <h3 className="text-lg font-bold text-foreground">{student.name}</h3>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-xs">
                             {student.birth_date && (
                                 <div className="flex items-center gap-2">
                                     <span className="text-muted-foreground w-12 shrink-0">生年月日</span>
-                                    <span className="text-gray-700 font-medium">
+                                    <span className="text-foreground font-medium">
                                         {student.birth_date}
                                         {age !== null && <span className="ml-2 text-primary">({age}歳)</span>}
                                     </span>
@@ -75,7 +75,7 @@ export function StudentCard({ student }: StudentCardProps) {
                             {student.emergency_contact && (
                                 <div className="flex items-center gap-2">
                                     <span className="text-muted-foreground w-12 shrink-0">緊急連絡</span>
-                                    <span className="text-gray-700 font-medium">
+                                    <span className="text-foreground font-medium">
                                         {student.emergency_contact}
                                         {student.emergency_relationship && ` (${student.emergency_relationship})`}
                                     </span>
@@ -84,7 +84,7 @@ export function StudentCard({ student }: StudentCardProps) {
                             {student.address && (
                                 <div className="flex items-start gap-2 col-span-full">
                                     <span className="text-muted-foreground w-12 shrink-0">住所</span>
-                                    <span className="text-gray-700 font-medium line-clamp-1">{student.address}</span>
+                                    <span className="text-foreground font-medium line-clamp-1">{student.address}</span>
                                 </div>
                             )}
                         </div>

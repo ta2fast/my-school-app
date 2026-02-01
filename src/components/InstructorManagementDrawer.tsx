@@ -98,7 +98,7 @@ export function InstructorManagementDrawer({ variant = 'default' }: InstructorMa
 
                     <div className="flex-1 overflow-y-auto px-4 space-y-6">
                         {/* Add Form */}
-                        <form onSubmit={handleAdd} className="space-y-4 bg-gray-50 p-4 rounded-xl border">
+                        <form onSubmit={handleAdd} className="space-y-4 bg-muted p-4 rounded-xl border border-border">
                             <div className="space-y-2">
                                 <Label htmlFor="ins-name">講師名</Label>
                                 <Input
@@ -126,12 +126,12 @@ export function InstructorManagementDrawer({ variant = 'default' }: InstructorMa
 
                         {/* List */}
                         <div className="space-y-2 pb-10">
-                            <h3 className="text-sm font-bold text-gray-500 px-1">講師一覧</h3>
+                            <h3 className="text-sm font-bold text-muted-foreground px-1">講師一覧</h3>
                             {instructors.length === 0 ? (
-                                <p className="text-center py-10 text-gray-400 text-sm italic">登録されている講師はいません</p>
+                                <p className="text-center py-10 text-muted-foreground text-sm italic">登録されている講師はいません</p>
                             ) : (
                                 instructors.map((ins) => (
-                                    <div key={ins.id} className="flex items-center justify-between p-3 bg-white border rounded-lg shadow-sm">
+                                    <div key={ins.id} className="flex items-center justify-between p-3 bg-background border border-border rounded-lg shadow-sm">
                                         <div>
                                             <p className="text-[10px] text-muted-foreground leading-none">{ins.furigana}</p>
                                             <p className="font-bold">{ins.name}</p>
@@ -139,7 +139,7 @@ export function InstructorManagementDrawer({ variant = 'default' }: InstructorMa
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="text-gray-400 hover:text-red-600 h-8 w-8"
+                                            className="text-muted-foreground hover:text-red-600 h-8 w-8"
                                             onClick={() => handleDelete(ins.id, ins.name)}
                                         >
                                             <Trash2 className="h-4 w-4" />
@@ -150,7 +150,7 @@ export function InstructorManagementDrawer({ variant = 'default' }: InstructorMa
                         </div>
                     </div>
 
-                    <DrawerFooter className="border-t bg-white">
+                    <DrawerFooter className="border-t border-border bg-background">
                         <Button variant="outline" onClick={() => setOpen(false)}>閉じる</Button>
                     </DrawerFooter>
                 </div>
