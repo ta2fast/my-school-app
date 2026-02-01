@@ -4,7 +4,15 @@ import { useEffect, useState, useCallback, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ChevronLeft, ChevronRight, Save, Calendar as CalendarIcon, Table as TableIcon, CheckCircle2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Save, Calendar as CalendarIcon, Table as TableIcon, CheckCircle2, X } from 'lucide-react'
+import {
+    Drawer,
+    DrawerContent,
+    DrawerHeader,
+    DrawerTitle,
+    DrawerFooter,
+    DrawerClose,
+} from '@/components/ui/drawer'
 
 interface Student {
     id: string
@@ -48,6 +56,13 @@ export default function AttendancePage() {
 
     // Data for Monthly
     const [monthlyRecords, setMonthlyRecords] = useState<AttendanceRecord[]>([])
+    const [editTarget, setEditTarget] = useState<{
+        id: string;
+        name: string;
+        date: string;
+        status: string | null;
+        isInstructor: boolean;
+    } | null>(null)
 
     // Fetch Master Data
     const fetchData = useCallback(async () => {
@@ -205,43 +220,33 @@ export default function AttendancePage() {
         }
     }, [monthlyRecords])
 
-    // Interactive Grid Toggle
-    const toggleMonthlyStatus = async (id: string, date: string, isInstructor: boolean) => {
-        const record = gridData.attendance[id]?.[date]
-        const currentStatus = record?.status
-        let nextStatus: 'present' | 'late' | 'absent' | 'none' = 'present'
+    const handleUpdateStatus = async (status: 'present' | 'late' | 'absent' | 'none') => {
+        if (!editTarget) return
 
-        if (isInstructor) {
-            // Cycle: none -> present -> late -> absent -> none
-            if (!currentStatus) nextStatus = 'present'
-            else if (currentStatus === 'present') nextStatus = 'late'
-            else if (currentStatus === 'late') nextStatus = 'absent'
-            else if (currentStatus === 'absent') nextStatus = 'none'
-        } else {
-            // Cycle: none -> present -> absent -> none
-            if (!currentStatus) nextStatus = 'present'
-            else if (currentStatus === 'present') nextStatus = 'absent'
-            else if (currentStatus === 'absent') nextStatus = 'none'
-        }
+        const { id, date, isInstructor } = editTarget
+        const record = gridData.attendance[id]?.[date]
 
         try {
-            if (nextStatus === 'none' && record?.id) {
-                await supabase.from('attendance').delete().eq('id', record.id)
+            if (status === 'none') {
+                if (record?.id) {
+                    await supabase.from('attendance').delete().eq('id', record.id)
+                }
             } else {
                 const existingLocation = gridData.locations[date] || ""
                 const newRecord = {
                     ...(record?.id ? { id: record.id } : {}),
                     date,
-                    status: nextStatus as any,
+                    status: status as any,
                     location: existingLocation,
                     ...(isInstructor ? { instructor_id: id } : { student_id: id })
                 }
-
                 await supabase.from('attendance').upsert(newRecord)
             }
             fetchMonthlyData()
+            setEditTarget(null)
         } catch (error) {
-            console.error('Error toggling status:', error)
+            console.error('Error updating status:', error)
+            alert('更新に失敗しました。')
         }
     }
 
@@ -487,7 +492,13 @@ export default function AttendancePage() {
                                                     <td
                                                         key={dateStr}
                                                         className="p-1 border border-border text-center cursor-pointer hover:bg-green-500/10"
-                                                        onClick={() => toggleMonthlyStatus(student.id, dateStr, false)}
+                                                        onClick={() => setEditTarget({
+                                                            id: student.id,
+                                                            name: student.name,
+                                                            date: dateStr,
+                                                            status: record?.status || null,
+                                                            isInstructor: false
+                                                        })}
                                                     >
                                                         {status === 'present' ? <span className="text-green-600 font-bold text-sm">●</span> : status === 'absent' ? <span className="text-muted-foreground/30">・</span> : null}
                                                     </td>
@@ -515,7 +526,13 @@ export default function AttendancePage() {
                                                     <td
                                                         key={dateStr}
                                                         className="p-1 border border-border text-center cursor-pointer hover:bg-orange-500/10"
-                                                        onClick={() => toggleMonthlyStatus(ins.id, dateStr, true)}
+                                                        onClick={() => setEditTarget({
+                                                            id: ins.id,
+                                                            name: ins.name,
+                                                            date: dateStr,
+                                                            status: record?.status || null,
+                                                            isInstructor: true
+                                                        })}
                                                     >
                                                         {status === 'present' ? <span className="text-orange-600 font-bold text-sm">●</span> :
                                                             status === 'late' ? <span className="text-yellow-600 font-bold text-sm">▲</span> :
@@ -559,6 +576,63 @@ export default function AttendancePage() {
                     </Button>
                 </div>
             )}
+
+            {/* Attendance Edit Drawer */}
+            <Drawer open={!!editTarget} onOpenChange={(open) => !open && setEditTarget(null)}>
+                <DrawerContent>
+                    <div className="mx-auto w-full max-w-sm p-6">
+                        <DrawerHeader className="px-0">
+                            <DrawerTitle className="text-center">
+                                {editTarget?.name}
+                                <div className="text-sm font-normal text-muted-foreground mt-1">
+                                    {editTarget?.date.replace(/-/g, '/')} の出欠
+                                </div>
+                            </DrawerTitle>
+                        </DrawerHeader>
+                        <div className="grid grid-cols-2 gap-3 mt-4">
+                            <Button
+                                variant={editTarget?.status === 'present' ? 'default' : 'outline'}
+                                className={`h-16 text-lg font-bold flex flex-col items-center justify-center gap-1 ${editTarget?.status === 'present' ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                                onClick={() => handleUpdateStatus('present')}
+                            >
+                                <span className="text-xl">●</span>
+                                出席
+                            </Button>
+                            <Button
+                                variant={editTarget?.status === 'absent' ? 'default' : 'outline'}
+                                className="h-16 text-lg font-bold flex flex-col items-center justify-center gap-1"
+                                onClick={() => handleUpdateStatus('absent')}
+                            >
+                                <span className="text-xl">・</span>
+                                欠席
+                            </Button>
+                            {editTarget?.isInstructor && (
+                                <Button
+                                    variant={editTarget?.status === 'late' ? 'default' : 'outline'}
+                                    className={`h-16 text-lg font-bold flex flex-col items-center justify-center gap-1 col-span-2 ${editTarget?.status === 'late' ? 'bg-yellow-600 hover:bg-yellow-700' : ''}`}
+                                    onClick={() => handleUpdateStatus('late')}
+                                >
+                                    <span className="text-xl">▲</span>
+                                    遅刻
+                                </Button>
+                            )}
+                            <Button
+                                variant="ghost"
+                                className="h-12 text-muted-foreground col-span-2 mt-2"
+                                onClick={() => handleUpdateStatus('none')}
+                            >
+                                <X className="h-4 w-4 mr-2" />
+                                記録を消去
+                            </Button>
+                        </div>
+                        <DrawerFooter className="px-0 mt-6 pb-8">
+                            <DrawerClose asChild>
+                                <Button variant="outline" className="w-full h-12">キャンセル</Button>
+                            </DrawerClose>
+                        </DrawerFooter>
+                    </div>
+                </DrawerContent>
+            </Drawer>
         </div>
     )
 }
