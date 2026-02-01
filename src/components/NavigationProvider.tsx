@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
-const DEFAULT_ORDER = ['/attendance', '/', '/accounting', '/settings'];
+const DEFAULT_ORDER = ['/attendance', '/students', '/accounting', '/settings'];
 
 const NavigationContext = createContext({
     direction: 0,
@@ -27,9 +27,14 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         const stored = localStorage.getItem('nav_order');
         if (stored) {
             try {
-                const parsed = JSON.parse(stored);
-                if (Array.isArray(parsed) && parsed.length === DEFAULT_ORDER.length) {
-                    setOrder(parsed);
+                let parsed = JSON.parse(stored);
+                if (Array.isArray(parsed)) {
+                    // Migrate / to /students
+                    parsed = parsed.map(p => p === '/' ? '/students' : p);
+                    // Ensure all required routes are present
+                    if (parsed.length === DEFAULT_ORDER.length) {
+                        setOrder(parsed);
+                    }
                 }
             } catch (e) {
                 console.error('Failed to parse nav_order', e);

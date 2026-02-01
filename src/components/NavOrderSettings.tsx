@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowUp, ArrowDown, GripVertical } from 'lucide-react'
 
 const NAV_LABELS: Record<string, string> = {
-    '/': '名簿',
+    '/students': '名簿',
     '/attendance': '出欠',
     '/accounting': '会計',
     '/settings': '設定'

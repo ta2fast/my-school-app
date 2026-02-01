@@ -4,7 +4,8 @@ import { ThemeToggle } from '@/components/ThemeToggle'
 import { AddStudentDrawer } from '@/components/AddStudentDrawer'
 import { InstructorManagementDrawer } from '@/components/InstructorManagementDrawer'
 import { NavOrderSettings } from '@/components/NavOrderSettings'
-import { Settings, UserPlus, Users, Moon, Layout } from 'lucide-react'
+import { Settings, UserPlus, Users, Moon, Layout, ChevronRight } from 'lucide-react'
+import Link from 'next/link'
 
 export default function SettingsPage() {
     return (
@@ -32,20 +33,6 @@ export default function SettingsPage() {
                         </div>
                         <ThemeToggle />
                     </div>
-                </div>
-
-                {/* ナビゲーション順序 */}
-                <div className="bg-card border border-border rounded-xl p-4">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                            <Layout className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                        </div>
-                        <div>
-                            <h3 className="font-semibold text-foreground">メニューの並び順</h3>
-                            <p className="text-xs text-muted-foreground">下のメニューとスワイプの順番を変更します</p>
-                        </div>
-                    </div>
-                    <NavOrderSettings />
                 </div>
 
                 {/* 生徒管理 */}
@@ -79,6 +66,22 @@ export default function SettingsPage() {
                         <InstructorManagementDrawer variant="settings" />
                     </div>
                 </div>
+
+                {/* ナビゲーション順序（一番最後に移動） */}
+                <Link href="/settings/reorder" className="block outline-none group">
+                    <div className="bg-card border border-border rounded-xl p-4 flex items-center justify-between transition-colors group-hover:bg-accent/50 group-active:bg-accent">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                                <Layout className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-foreground">メニューの並び順</h3>
+                                <p className="text-xs text-muted-foreground">表示順序をカスタマイズします</p>
+                            </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                    </div>
+                </Link>
             </div>
         </div>
     )
