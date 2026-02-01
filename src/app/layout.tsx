@@ -41,7 +41,7 @@ export default function RootLayout({
       >
         <main className="max-w-md mx-auto min-h-screen relative shadow-lg bg-background">
           {/* テーマ切り替えボタン */}
-          <div className="fixed top-4 right-4 z-50">
+          <div className="fixed top-4 right-20 z-50">
             <ThemeToggle />
           </div>
           {children}
