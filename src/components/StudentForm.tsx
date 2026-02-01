@@ -24,18 +24,26 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
     const [name, setName] = useState(initialData?.name || '')
     const [furigana, setFurigana] = useState(initialData?.furigana || '')
     const [address, setAddress] = useState(initialData?.address || '')
-    const [birthDate, setBirthDate] = useState(initialData?.birth_date || '')
+    const [birthYear, setBirthYear] = useState(initialData?.birth_date?.split('-')[0] || '')
+    const [birthMonth, setBirthMonth] = useState(initialData?.birth_date?.split('-')[1] || '')
+    const [birthDay, setBirthDay] = useState(initialData?.birth_date?.split('-')[2] || '')
     const [emergencyContact, setEmergencyContact] = useState(initialData?.emergency_contact || '')
     const [emergencyRelationship, setEmergencyRelationship] = useState(initialData?.emergency_relationship || '')
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+
+        // 年月日を合体 (例: 2015-01-01)
+        const bDate = birthYear && birthMonth && birthDay
+            ? `${birthYear}-${birthMonth.padStart(2, '0')}-${birthDay.padStart(2, '0')}`
+            : initialData?.birth_date || null
+
         await onSubmit({
             name,
             furigana,
-            monthly_fee: 0, // No longer used but kept for schema compatibility
+            monthly_fee: 0,
             address: address || null,
-            birth_date: birthDate || null,
+            birth_date: bDate,
             emergency_contact: emergencyContact || null,
             emergency_relationship: emergencyRelationship || null
         })
@@ -75,40 +83,56 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
                     className="h-12"
                 />
             </div>
-            {/* 以下の隠しフィールドはブラウザの自動入力ツール（パスワード管理等）を誘い込むためのダミーです */}
-            <input type="text" style={{ position: 'fixed', top: '-1000px', left: '-1000px' }} tabIndex={-1} autoComplete="on" />
-            <input type="password" style={{ position: 'fixed', top: '-1000px', left: '-1000px' }} tabIndex={-1} autoComplete="on" />
 
             <div className="space-y-2">
-                <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">生まれた日 (例: 20151231)</span>
-                <Input
-                    id="x-random-birthday"
-                    name="x-random-birthday"
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="off"
-                    data-lpignore="true"
-                    data-form-type="other"
-                    placeholder="20151231"
-                    value={birthDate}
-                    onChange={(e) => setBirthDate(e.target.value)}
-                    className="h-12"
-                />
+                <span className="text-sm font-medium">生年月日</span>
+                <div className="flex gap-2">
+                    <div className="flex-1">
+                        <Input
+                            type="tel"
+                            inputMode="numeric"
+                            placeholder="年 (2015)"
+                            value={birthYear}
+                            onChange={(e) => setBirthYear(e.target.value)}
+                            className="h-12"
+                            autoComplete="off"
+                        />
+                    </div>
+                    <div className="w-20">
+                        <Input
+                            type="tel"
+                            inputMode="numeric"
+                            placeholder="月"
+                            value={birthMonth}
+                            onChange={(e) => setBirthMonth(e.target.value)}
+                            className="h-12 text-center"
+                            autoComplete="off"
+                        />
+                    </div>
+                    <div className="w-20">
+                        <Input
+                            type="tel"
+                            inputMode="numeric"
+                            placeholder="日"
+                            value={birthDay}
+                            onChange={(e) => setBirthDay(e.target.value)}
+                            className="h-12 text-center"
+                            autoComplete="off"
+                        />
+                    </div>
+                </div>
             </div>
+
             <div className="space-y-2">
-                <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">れんらくさき (電話番号)</span>
+                <span className="text-sm font-medium">緊急連絡先 (電話番号)</span>
                 <Input
-                    id="y-random-phone"
-                    name="y-random-phone"
-                    type="text"
+                    type="tel"
                     inputMode="numeric"
-                    autoComplete="off"
-                    data-lpignore="true"
-                    data-form-type="other"
                     placeholder="09000000000"
                     value={emergencyContact}
                     onChange={(e) => setEmergencyContact(e.target.value)}
                     className="h-12"
+                    autoComplete="off"
                 />
             </div>
             <div className="space-y-2">
