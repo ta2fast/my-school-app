@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { BottomNav } from "@/components/BottomNav";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,11 +35,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja">
+    <html lang="ja" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 min-h-screen pb-20`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-muted min-h-screen pb-20`}
       >
-        <main className="max-w-md mx-auto min-h-screen relative shadow-lg bg-white">
+        <main className="max-w-md mx-auto min-h-screen relative shadow-lg bg-background">
+          {/* テーマ切り替えボタン */}
+          <div className="fixed top-4 right-4 z-50">
+            <ThemeToggle />
+          </div>
           {children}
           <BottomNav />
         </main>
