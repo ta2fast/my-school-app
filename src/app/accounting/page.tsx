@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { AccountingDashboard } from '@/components/AccountingDashboard'
 import { TransactionForm } from '@/components/TransactionForm'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Receipt, Calendar, Tag, ChevronLeft, ChevronRight, Edit2 } from 'lucide-react'
+import { Receipt, Calendar, Tag, ChevronLeft, ChevronRight, Edit2, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -141,6 +141,61 @@ export default function AccountingPage() {
         }, 100)
     }
 
+    const handleDownloadCSV = async () => {
+        setLoading(true)
+        try {
+            const { data, error } = await supabase
+                .from('transactions')
+                .select('*')
+                .order('date', { ascending: false })
+
+            if (error) throw error
+            if (!data || data.length === 0) {
+                alert('データがありません。')
+                return
+            }
+
+            // CSV ヘッダー
+            const headers = ['日付', 'タイプ', 'カテゴリ', '金額', '項目名', 'メモ']
+
+            // データ行の作成
+            const rows = data.map(tx => [
+                tx.date,
+                tx.type === 'income' ? '収入' : '支出',
+                tx.category,
+                tx.amount,
+                `"${tx.title.replace(/"/g, '""')}"`, // カンマやクォート対策
+                tx.memo ? `"${tx.memo.replace(/"/g, '""')}"` : ''
+            ])
+
+            const csvContent = [headers, ...rows]
+                .map(row => row.join(','))
+                .join('\n')
+
+            // Excelで文字化けしないようにBOM付きUTF-8にする
+            const bom = new Uint8Array([0xEF, 0xBB, 0xBF])
+            const blob = new Blob([bom, csvContent], { type: 'text/csv;charset=utf-8;' })
+
+            const link = document.createElement('a')
+            const url = URL.createObjectURL(blob)
+
+            const now = new Date()
+            const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '')
+
+            link.setAttribute('href', url)
+            link.setAttribute('download', `team-accounting-${dateStr}.csv`)
+            link.style.visibility = 'hidden'
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+        } catch (error: any) {
+            console.error('Error downloading CSV:', error)
+            alert('CSVの作成に失敗しました: ' + error.message)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const monthLabel = currentMonth.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long' })
 
     // 表示用のフィルタリング
@@ -156,6 +211,13 @@ export default function AccountingPage() {
                     <h1 className="text-3xl font-black tracking-tighter text-foreground uppercase italic">Accounting</h1>
                     <p className="text-xs font-bold text-muted-foreground tracking-widest uppercase">Team Treasury Management</p>
                 </div>
+                <Button
+                    onClick={handleDownloadCSV}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-10 px-4 rounded-xl shadow-lg shadow-emerald-900/20 transition-all flex items-center gap-2"
+                >
+                    <Download className="h-4 w-4" />
+                    <span className="text-xs uppercase tracking-wider">CSV</span>
+                </Button>
             </header>
 
             <div className="space-y-6">
