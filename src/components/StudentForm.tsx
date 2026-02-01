@@ -75,26 +75,36 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
                     className="h-12"
                 />
             </div>
+            {/* 以下の隠しフィールドはブラウザの自動入力ツール（パスワード管理等）を誘い込むためのダミーです */}
+            <input type="text" style={{ position: 'fixed', top: '-1000px', left: '-1000px' }} tabIndex={-1} autoComplete="on" />
+            <input type="password" style={{ position: 'fixed', top: '-1000px', left: '-1000px' }} tabIndex={-1} autoComplete="on" />
+
             <div className="space-y-2">
-                <Label htmlFor="st-birth-date">生年月日</Label>
+                <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">生まれた日 (例: 20151231)</span>
                 <Input
-                    id="st-birth-date"
-                    type="tel"
+                    id="x-random-birthday"
+                    name="x-random-birthday"
+                    type="text"
                     inputMode="numeric"
                     autoComplete="off"
-                    placeholder="20150101"
+                    data-lpignore="true"
+                    data-form-type="other"
+                    placeholder="20151231"
                     value={birthDate}
                     onChange={(e) => setBirthDate(e.target.value)}
                     className="h-12"
                 />
             </div>
             <div className="space-y-2">
-                <Label htmlFor="st-emergency-phone">緊急連絡先 (電話番号)</Label>
+                <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">れんらくさき (電話番号)</span>
                 <Input
-                    id="st-emergency-phone"
-                    type="tel"
+                    id="y-random-phone"
+                    name="y-random-phone"
+                    type="text"
                     inputMode="numeric"
                     autoComplete="off"
+                    data-lpignore="true"
+                    data-form-type="other"
                     placeholder="09000000000"
                     value={emergencyContact}
                     onChange={(e) => setEmergencyContact(e.target.value)}
