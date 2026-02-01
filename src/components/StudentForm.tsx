@@ -80,6 +80,7 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
                 <Input
                     id="dob"
                     type="text"
+                    inputMode="numeric"
                     placeholder="1990-01-01"
                     value={birthDate}
                     onChange={(e) => setBirthDate(e.target.value)}
@@ -90,6 +91,8 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
                 <Label htmlFor="emergency">緊急連絡先 (電話番号)</Label>
                 <Input
                     id="emergency"
+                    type="text"
+                    inputMode="numeric"
                     placeholder="090-0000-0000"
                     value={emergencyContact}
                     onChange={(e) => setEmergencyContact(e.target.value)}
@@ -98,13 +101,25 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
             </div>
             <div className="space-y-2">
                 <Label htmlFor="relationship">緊急連絡先 (続柄)</Label>
-                <Input
-                    id="relationship"
-                    placeholder="母、父、祖父 など"
-                    value={emergencyRelationship}
-                    onChange={(e) => setEmergencyRelationship(e.target.value)}
-                    className="h-12"
-                />
+                <div className="grid grid-cols-3 gap-2">
+                    {['母', '父', '本人', '祖母', '祖父'].map((rel) => (
+                        <Button
+                            key={rel}
+                            type="button"
+                            variant={emergencyRelationship === rel ? 'default' : 'outline'}
+                            className="h-10 text-xs"
+                            onClick={() => setEmergencyRelationship(rel)}
+                        >
+                            {rel}
+                        </Button>
+                    ))}
+                    <Input
+                        placeholder="その他"
+                        value={['母', '父', '本人', '祖母', '祖父'].includes(emergencyRelationship) ? '' : emergencyRelationship}
+                        onChange={(e) => setEmergencyRelationship(e.target.value)}
+                        className="h-10 text-xs"
+                    />
+                </div>
             </div>
             <div className="flex gap-3 pt-4 pb-8">
                 <Button type="submit" className="flex-1 h-12 text-lg font-bold" disabled={loading}>
