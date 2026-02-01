@@ -17,18 +17,25 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     const router = useRouter();
     const [lastIndex, setLastIndex] = useState(-1);
     const [direction, setDirection] = useState(0);
+    const [wasSwiped, setWasSwiped] = useState(false);
 
     useEffect(() => {
         const currentIndex = routes.indexOf(pathname);
         if (lastIndex !== -1 && currentIndex !== -1 && currentIndex !== lastIndex) {
-            setDirection(currentIndex > lastIndex ? 1 : -1);
+            if (wasSwiped) {
+                setDirection(currentIndex > lastIndex ? 1 : -1);
+            } else {
+                setDirection(0); // No slide for direct link clicks
+            }
         }
         setLastIndex(currentIndex);
-    }, [pathname, lastIndex]);
+        setWasSwiped(false);
+    }, [pathname, lastIndex, wasSwiped]);
 
     const navigateNext = () => {
         const currentIndex = routes.indexOf(pathname);
         if (currentIndex !== -1 && currentIndex < routes.length - 1) {
+            setWasSwiped(true);
             router.push(routes[currentIndex + 1]);
         }
     };
@@ -36,6 +43,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     const navigatePrev = () => {
         const currentIndex = routes.indexOf(pathname);
         if (currentIndex !== -1 && currentIndex > 0) {
+            setWasSwiped(true);
             router.push(routes[currentIndex - 1]);
         }
     };

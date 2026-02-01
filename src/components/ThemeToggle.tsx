@@ -9,21 +9,15 @@ export function ThemeToggle() {
 
     useEffect(() => {
         setMounted(true);
-        // 初期値の取得: localStorage > システム設定
         const stored = localStorage.getItem("theme");
-        if (stored === "dark") {
-            setIsDark(true);
-            document.documentElement.classList.add("dark");
-        } else if (stored === "light") {
+        if (stored === "light") {
             setIsDark(false);
             document.documentElement.classList.remove("dark");
         } else {
-            // システム設定に従う
-            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-            setIsDark(prefersDark);
-            if (prefersDark) {
-                document.documentElement.classList.add("dark");
-            }
+            // Default to dark
+            setIsDark(true);
+            document.documentElement.classList.add("dark");
+            if (!stored) localStorage.setItem("theme", "dark");
         }
     }, []);
 
