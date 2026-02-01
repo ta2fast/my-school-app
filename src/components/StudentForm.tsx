@@ -26,16 +26,22 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
     const [furigana, setFurigana] = useState(initialData?.furigana || '')
     const [address, setAddress] = useState(initialData?.address || '')
     const [gender, setGender] = useState(initialData?.gender || '')
-    const [birthYear, setBirthYear] = useState(initialData?.birth_date?.split('-')[0] || '')
-    const [birthMonth, setBirthMonth] = useState(initialData?.birth_date?.split('-')[1] || '')
-    const [birthDay, setBirthDay] = useState(initialData?.birth_date?.split('-')[2] || '')
+
+    // 日付の正規化 (01 -> 1)
+    const parsePart = (val?: string) => val ? String(Number(val)) : ''
+    const dateParts = initialData?.birth_date?.split('-') || []
+
+    const [birthYear, setBirthYear] = useState(parsePart(dateParts[0]))
+    const [birthMonth, setBirthMonth] = useState(parsePart(dateParts[1]))
+    const [birthDay, setBirthDay] = useState(parsePart(dateParts[2]))
+
     const [emergencyContact, setEmergencyContact] = useState(initialData?.emergency_contact || '')
     const [emergencyRelationship, setEmergencyRelationship] = useState(initialData?.emergency_relationship || '')
 
     const currentYear = new Date().getFullYear()
-    const years = Array.from({ length: 101 }, (_, i) => currentYear - i) // 100年前まで選択可能
-    const months = Array.from({ length: 12 }, (_, i) => i + 1)
-    const days = Array.from({ length: 31 }, (_, i) => i + 1)
+    const years = Array.from({ length: 101 }, (_, i) => String(currentYear - i))
+    const months = Array.from({ length: 12 }, (_, i) => String(i + 1))
+    const days = Array.from({ length: 31 }, (_, i) => String(i + 1))
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()

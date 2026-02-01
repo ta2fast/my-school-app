@@ -24,6 +24,7 @@ interface EditStudentDrawerProps {
         gender?: string
         birth_date?: string
         emergency_contact?: string
+        emergency_relationship?: string
     }
 }
 
@@ -59,12 +60,13 @@ export function EditStudentDrawer({ student }: EditStudentDrawerProps) {
                 </Button>
             </DrawerTrigger>
             <DrawerContent>
-                <div className="mx-auto w-full max-w-sm overflow-y-auto max-h-[calc(80vh-2rem)] px-4">
+                <div className="mx-auto w-full max-w-sm px-6 pb-12 overflow-y-auto" style={{ maxHeight: 'calc(85vh - 20px)' }}>
                     <DrawerHeader className="px-0 text-left">
                         <DrawerTitle>生徒情報の修正</DrawerTitle>
                         <DrawerDescription>{student.name} さんの情報を修正します。</DrawerDescription>
                     </DrawerHeader>
                     <StudentForm
+                        key={student.id}
                         initialData={student}
                         onSubmit={handleSubmit}
                         onCancel={() => setOpen(false)}
