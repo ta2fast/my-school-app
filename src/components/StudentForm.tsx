@@ -79,7 +79,8 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
                 <Label htmlFor="dob">生年月日</Label>
                 <Input
                     id="dob"
-                    type="date"
+                    type="text"
+                    placeholder="1990-01-01"
                     value={birthDate}
                     onChange={(e) => setBirthDate(e.target.value)}
                     className="h-12"
