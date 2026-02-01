@@ -110,12 +110,12 @@ export function InstructorManagementDrawer({ variant = 'default' }: InstructorMa
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="ins-furigana">ふりがな</Label>
+                                <Label htmlFor="ins-furigana">フリガナ</Label>
                                 <Input
                                     id="ins-furigana"
                                     value={furigana}
                                     onChange={(e) => setFurigana(e.target.value)}
-                                    placeholder="やまだ たろう"
+                                    placeholder="ヤマダ タロウ"
                                 />
                             </div>
                             <Button type="submit" className="w-full gap-2" disabled={loading}>
