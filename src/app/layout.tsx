@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { BottomNav } from "@/components/BottomNav";
-import { PageTransition } from "@/components/PageTransition";
+import { NavigationProvider } from "@/components/NavigationProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,9 +40,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-muted min-h-screen pb-20`}
       >
         <main className="max-w-md mx-auto min-h-screen relative shadow-lg bg-background overflow-x-hidden">
-          {/* <PageTransition> */}
-          {children}
-          {/* </PageTransition> */}
+          <NavigationProvider>
+            {children}
+          </NavigationProvider>
           <BottomNav />
         </main>
       </body>
