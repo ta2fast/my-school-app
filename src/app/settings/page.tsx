@@ -86,7 +86,7 @@ export default function SettingsPage() {
 
             <div className="mt-12 text-center pb-8">
                 <p className="text-[10px] text-muted-foreground/50 font-mono">
-                    Version 0.1.1
+                    Version 0.1.2
                 </p>
             </div>
         </div>
