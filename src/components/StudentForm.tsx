@@ -27,9 +27,17 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
     const [address, setAddress] = useState(initialData?.address || '')
     const [gender, setGender] = useState(initialData?.gender || '')
 
-    // 日付の正規化 (01 -> 1)
-    const parsePart = (val?: string) => val ? String(Number(val)) : ''
-    const dateParts = initialData?.birth_date?.split('-') || []
+    // 日付の正規化 (2015/01/01 -> 2015-01-01 -> 1)
+    const normalizeDate = (date?: string) => {
+        if (!date) return [];
+        return date.replace(/\//g, '-').split('-');
+    }
+    const parsePart = (val?: string) => {
+        if (!val) return '';
+        const num = Number(val);
+        return isNaN(num) ? '' : String(num);
+    }
+    const dateParts = normalizeDate(initialData?.birth_date);
 
     const [birthYear, setBirthYear] = useState(parsePart(dateParts[0]))
     const [birthMonth, setBirthMonth] = useState(parsePart(dateParts[1]))

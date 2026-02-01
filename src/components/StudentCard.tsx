@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button"
 import { EditStudentDrawer } from './EditStudentDrawer'
 import { cn } from '@/lib/utils'
 
+import { Trash2, Edit } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+
 interface StudentCardProps {
     student: {
         id: string;
@@ -15,12 +18,10 @@ interface StudentCardProps {
         emergency_contact?: string;
         emergency_relationship?: string;
     }
+    onEdit?: (student: any) => void
 }
 
-import { Trash2 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
-
-export function StudentCard({ student }: StudentCardProps) {
+export function StudentCard({ student, onEdit }: StudentCardProps) {
     const calculateAge = (birthDate?: string) => {
         if (!birthDate) return null;
         const today = new Date();
@@ -98,9 +99,17 @@ export function StudentCard({ student }: StudentCardProps) {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <div onClick={(e) => e.stopPropagation()}>
-                            <EditStudentDrawer student={student} />
-                        </div>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-primary"
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                onEdit?.(student)
+                            }}
+                        >
+                            <Edit className="h-4 w-4" />
+                        </Button>
                         <Button
                             variant="ghost"
                             size="icon"

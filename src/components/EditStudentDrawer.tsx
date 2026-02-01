@@ -25,14 +25,17 @@ interface EditStudentDrawerProps {
         birth_date?: string
         emergency_contact?: string
         emergency_relationship?: string
-    }
+    } | null
+    open: boolean
+    onOpenChange: (open: boolean) => void
+    onSuccess?: () => void
 }
 
-export function EditStudentDrawer({ student }: EditStudentDrawerProps) {
-    const [open, setOpen] = useState(false)
+export function EditStudentDrawer({ student, open, onOpenChange, onSuccess }: EditStudentDrawerProps) {
     const [loading, setLoading] = useState(false)
 
     const handleSubmit = async (data: any) => {
+        if (!student) return
         setLoading(true)
         try {
             const { error } = await supabase
@@ -42,8 +45,9 @@ export function EditStudentDrawer({ student }: EditStudentDrawerProps) {
 
             if (error) throw error
 
-            setOpen(false)
-            window.location.reload()
+            onOpenChange(false)
+            if (onSuccess) onSuccess()
+            else window.location.reload()
         } catch (error: any) {
             console.error('Error updating student:', error)
             alert(`修正に失敗しました。\nエラー内容: ${error.message || '不明なエラー'}`)
@@ -52,13 +56,10 @@ export function EditStudentDrawer({ student }: EditStudentDrawerProps) {
         }
     }
 
+    if (!student) return null
+
     return (
-        <Drawer open={open} onOpenChange={setOpen}>
-            <DrawerTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
-                    <Edit className="h-4 w-4" />
-                </Button>
-            </DrawerTrigger>
+        <Drawer open={open} onOpenChange={onOpenChange}>
             <DrawerContent>
                 <div className="mx-auto w-full max-w-sm px-6 pb-12 overflow-y-auto" style={{ maxHeight: 'calc(85vh - 20px)' }}>
                     <DrawerHeader className="px-0 text-left">
@@ -69,7 +70,7 @@ export function EditStudentDrawer({ student }: EditStudentDrawerProps) {
                         key={student.id}
                         initialData={student}
                         onSubmit={handleSubmit}
-                        onCancel={() => setOpen(false)}
+                        onCancel={() => onOpenChange(false)}
                         loading={loading}
                     />
                 </div>

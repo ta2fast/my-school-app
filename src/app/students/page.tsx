@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { StudentCard } from '@/components/StudentCard'
+import { EditStudentDrawer } from '@/components/EditStudentDrawer'
 import { Skeleton } from '@/components/ui/skeleton'
 
 interface Student {
@@ -20,6 +21,8 @@ interface Student {
 export default function StudentsPage() {
     const [students, setStudents] = useState<Student[]>([])
     const [loading, setLoading] = useState(true)
+    const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
+    const [isEditOpen, setIsEditOpen] = useState(false)
 
     useEffect(() => {
         async function fetchStudents() {
@@ -41,6 +44,11 @@ export default function StudentsPage() {
         fetchStudents()
     }, [])
 
+    const handleEdit = (student: Student) => {
+        setSelectedStudent(student)
+        setIsEditOpen(true)
+    }
+
     return (
         <div className="p-4 pt-6">
             <header className="mb-6">
@@ -55,7 +63,11 @@ export default function StudentsPage() {
                     ))
                 ) : students.length > 0 ? (
                     students.map((student) => (
-                        <StudentCard key={student.id} student={student} />
+                        <StudentCard
+                            key={student.id}
+                            student={student}
+                            onEdit={handleEdit}
+                        />
                     ))
                 ) : (
                     <div className="text-center py-20 text-muted-foreground border-2 border-dashed rounded-xl">
@@ -64,6 +76,12 @@ export default function StudentsPage() {
                     </div>
                 )}
             </div>
+
+            <EditStudentDrawer
+                student={selectedStudent}
+                open={isEditOpen}
+                onOpenChange={setIsEditOpen}
+            />
         </div>
     )
 }
