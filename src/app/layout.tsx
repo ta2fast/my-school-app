@@ -40,9 +40,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-muted min-h-screen pb-20`}
       >
         <main className="max-w-md mx-auto min-h-screen relative shadow-lg bg-background overflow-x-hidden">
-          <PageTransition>
-            {children}
-          </PageTransition>
+          {/* <PageTransition> */}
+          {children}
+          {/* </PageTransition> */}
           <BottomNav />
         </main>
       </body>
