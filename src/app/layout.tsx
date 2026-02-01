@@ -42,8 +42,8 @@ export default function RootLayout({
         <main className="max-w-md mx-auto min-h-screen relative shadow-lg bg-background overflow-x-hidden">
           <NavigationProvider>
             {children}
+            <BottomNav />
           </NavigationProvider>
-          <BottomNav />
         </main>
       </body>
     </html>

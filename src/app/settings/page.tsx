@@ -19,22 +19,6 @@ export default function SettingsPage() {
             </header>
 
             <div className="space-y-4">
-                {/* テーマ設定 */}
-                <div className="bg-card border border-border rounded-xl p-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-muted rounded-lg">
-                                <Moon className="w-5 h-5 text-muted-foreground" />
-                            </div>
-                            <div>
-                                <h3 className="font-semibold text-foreground">表示モード</h3>
-                                <p className="text-xs text-muted-foreground">ダークモード / ライトモードの切り替え</p>
-                            </div>
-                        </div>
-                        <ThemeToggle />
-                    </div>
-                </div>
-
                 {/* 生徒管理 */}
                 <div className="bg-card border border-border rounded-xl p-4">
                     <div className="flex items-center justify-between">
@@ -67,7 +51,7 @@ export default function SettingsPage() {
                     </div>
                 </div>
 
-                {/* ナビゲーション順序（一番最後に移動） */}
+                {/* ナビゲーション順序 */}
                 <Link href="/settings/reorder" className="block outline-none group">
                     <div className="bg-card border border-border rounded-xl p-4 flex items-center justify-between transition-colors group-hover:bg-accent/50 group-active:bg-accent">
                         <div className="flex items-center gap-3">
@@ -82,6 +66,22 @@ export default function SettingsPage() {
                         <ChevronRight className="w-5 h-5 text-muted-foreground" />
                     </div>
                 </Link>
+
+                {/* テーマ設定 */}
+                <div className="bg-card border border-border rounded-xl p-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-muted rounded-lg">
+                                <Moon className="w-5 h-5 text-muted-foreground" />
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-foreground">表示モード</h3>
+                                <p className="text-xs text-muted-foreground">ダークモード / ライトモードの切り替え</p>
+                            </div>
+                        </div>
+                        <ThemeToggle />
+                    </div>
+                </div>
             </div>
         </div>
     )
