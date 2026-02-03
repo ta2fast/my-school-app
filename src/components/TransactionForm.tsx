@@ -28,15 +28,30 @@ export function TransactionForm({ onSubmit, onDelete, onCancel, loading, titleSu
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        await onSubmit({
-            id: initialData?.id, // Include ID if editing
-            date,
+
+        // 日付の簡易補完 (YYYYMMDD -> YYYY-MM-DD)
+        let formattedDate = date.replace(/[^\d]/g, '')
+        if (formattedDate.length === 8) {
+            formattedDate = `${formattedDate.slice(0, 4)}-${formattedDate.slice(4, 6)}-${formattedDate.slice(6, 8)}`
+        } else {
+            formattedDate = date // そのまま（バリデーションはSupabase側に任せるか、別途追加）
+        }
+
+        const payload: any = {
+            date: formattedDate,
             type,
             title,
             amount: parseInt(amount),
             category: initialData?.category || 'なし',
             memo
-        })
+        }
+
+        // 編集時のみIDを含める（新規作成時に undefined や null を送るとエラーになる場合があるため）
+        if (initialData?.id) {
+            payload.id = initialData.id
+        }
+
+        await onSubmit(payload)
     }
 
     return (
