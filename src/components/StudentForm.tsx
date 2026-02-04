@@ -15,6 +15,7 @@ interface StudentFormProps {
         birth_date?: string
         emergency_contact?: string
         emergency_relationship?: string
+        daily_rate?: number
     }
     onSubmit: (data: any) => Promise<void>
     onCancel: () => void
@@ -26,6 +27,7 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
     const [furigana, setFurigana] = useState(initialData?.furigana || '')
     const [address, setAddress] = useState(initialData?.address || '')
     const [gender, setGender] = useState(initialData?.gender || '')
+    const [dailyRate, setDailyRate] = useState(initialData?.daily_rate?.toString() || '0')
 
     // 日付の正規化 (2015/01/01 -> 2015-01-01 -> 1)
     const normalizeDate = (date?: string) => {
@@ -66,6 +68,7 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
             monthly_fee: 0,
             address: address || null,
             birth_date: bDate,
+            daily_rate: parseInt(dailyRate) || 0,
             emergency_contact: emergencyContact || null,
             emergency_relationship: emergencyRelationship || null
         })
@@ -102,6 +105,20 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
                     placeholder="〇〇県〇〇市..."
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
+                    className="h-12"
+                />
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="daily_rate">1日あたりの月謝 (円)</Label>
+                <Input
+                    id="daily_rate"
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="2000"
+                    value={dailyRate}
+                    onChange={(e) => setDailyRate(e.target.value)}
+                    required
                     className="h-12"
                 />
             </div>

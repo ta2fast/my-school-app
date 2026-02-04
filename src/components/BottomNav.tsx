@@ -11,6 +11,7 @@ import { useMemo } from 'react'
 const ALL_NAV_ITEMS = [
     { label: '名簿', icon: Users, href: '/students' },
     { label: '出欠', icon: CalendarCheck, href: '/attendance' },
+    { label: '月謝', icon: Wallet, href: '/tuition' },
     { label: '会計', icon: Wallet, href: '/accounting' },
     { label: '設定', icon: Settings, href: '/settings' },
 ]
