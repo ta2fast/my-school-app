@@ -17,6 +17,7 @@ interface Student {
     emergency_contact?: string
     emergency_relationship?: string
     daily_rate?: number
+    has_bike_rental?: boolean
 }
 
 export default function StudentsPage() {

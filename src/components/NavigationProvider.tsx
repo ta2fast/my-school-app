@@ -22,7 +22,6 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     const [direction, setDirection] = useState(0);
     const [wasSwiped, setWasSwiped] = useState(false);
 
-    // Initialize order from localStorage
     useEffect(() => {
         const stored = localStorage.getItem('nav_order');
         if (stored) {
@@ -30,14 +29,27 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
                 let parsed = JSON.parse(stored);
                 if (Array.isArray(parsed)) {
                     // Migrate / to /students
-                    parsed = parsed.map(p => p === '/' ? '/students' : p);
-                    // Ensure all required routes are present
-                    if (parsed.length === DEFAULT_ORDER.length) {
+                    parsed = parsed.map((p: string) => p === '/' ? '/students' : p);
+
+                    // 新しいルートが含まれていない場合は追加（マージ）
+                    const missingItems = DEFAULT_ORDER.filter((item: string) => !parsed.includes(item));
+                    if (missingItems.length > 0) {
+                        const newOrder = [...parsed, ...missingItems].filter((item: string) => DEFAULT_ORDER.includes(item));
+                        setOrder(newOrder);
+                        localStorage.setItem('nav_order', JSON.stringify(newOrder));
+                    } else if (parsed.length === DEFAULT_ORDER.length) {
                         setOrder(parsed);
+                    } else {
+                        // 不要な項目が含まれている場合は削除
+                        const cleanedOrder = parsed.filter((item: string) => DEFAULT_ORDER.includes(item));
+                        setOrder(cleanedOrder);
+                        localStorage.setItem('nav_order', JSON.stringify(cleanedOrder));
                     }
                 }
             } catch (e) {
                 console.error('Failed to parse nav_order', e);
+                // パース失敗時はデフォルトを使用
+                setOrder(DEFAULT_ORDER);
             }
         }
     }, []);

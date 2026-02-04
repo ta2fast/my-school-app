@@ -18,6 +18,7 @@ interface StudentCardProps {
         emergency_contact?: string;
         emergency_relationship?: string;
         daily_rate?: number;
+        has_bike_rental?: boolean;
     }
     onEdit?: (student: any) => void
 }
@@ -68,7 +69,14 @@ export function StudentCard({ student, onEdit }: StudentCardProps) {
                     <div className="flex-1 space-y-2">
                         <div>
                             <p className="text-[10px] text-muted-foreground">{student.furigana}</p>
-                            <h3 className="text-lg font-bold text-foreground">{student.name}</h3>
+                            <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                                {student.name}
+                                {student.has_bike_rental && (
+                                    <span className="bg-orange-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+                                        RENTAL
+                                    </span>
+                                )}
+                            </h3>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-xs">
@@ -78,14 +86,6 @@ export function StudentCard({ student, onEdit }: StudentCardProps) {
                                     <span className="text-foreground font-medium">
                                         {student.birth_date}
                                         {age !== null && <span className="ml-2 text-primary">({age}歳)</span>}
-                                    </span>
-                                </div>
-                            )}
-                            {student.daily_rate !== undefined && (
-                                <div className="flex items-center gap-2">
-                                    <span className="text-muted-foreground w-12 shrink-0">月謝日額</span>
-                                    <span className="text-foreground font-black text-indigo-600">
-                                        {new Intl.NumberFormat('ja-JP').format(student.daily_rate)}円
                                     </span>
                                 </div>
                             )}

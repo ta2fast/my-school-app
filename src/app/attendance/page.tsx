@@ -1,10 +1,12 @@
 'use client'
 
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useState, useCallback, useMemo, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ChevronLeft, ChevronRight, Save, Calendar as CalendarIcon, Table as TableIcon, CheckCircle2, X } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import {
     Drawer,
     DrawerContent,
@@ -38,6 +40,14 @@ interface AttendanceRecord {
 type ViewMode = 'daily' | 'monthly'
 
 export default function AttendancePage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <AttendanceContent />
+        </Suspense>
+    )
+}
+
+function AttendanceContent() {
     const [students, setStudents] = useState<Student[]>([])
     const [instructors, setInstructors] = useState<Instructor[]>([])
     const [loading, setLoading] = useState(true)
@@ -63,6 +73,17 @@ export default function AttendancePage() {
         status: string | null;
         isInstructor: boolean;
     } | null>(null)
+    const [isFinalized, setIsFinalized] = useState(false)
+    const [finalizing, setFinalizing] = useState(false)
+    const searchParams = useSearchParams()
+
+    useEffect(() => {
+        const monthParam = searchParams.get('month')
+        if (monthParam && /^\d{4}-\d{2}$/.test(monthParam)) {
+            setSelectedMonth(monthParam)
+            setViewMode('monthly')
+        }
+    }, [searchParams])
 
     // Fetch Master Data
     const fetchData = useCallback(async () => {
@@ -132,6 +153,15 @@ export default function AttendancePage() {
                 .lt('date', endOfMonth)
             if (error) throw error
             setMonthlyRecords(data || [])
+
+            // Fetch finalization status
+            const { data: fData, error: fError } = await supabase
+                .from('monthly_finalizations')
+                .select('is_finalized')
+                .eq('month', selectedMonth)
+                .single()
+
+            setIsFinalized(fData?.is_finalized || false)
         } catch (error) {
             console.error('Error fetching monthly data:', error)
         } finally {
@@ -247,6 +277,30 @@ export default function AttendancePage() {
         } catch (error) {
             console.error('Error updating status:', error)
             alert('更新に失敗しました。')
+        }
+    }
+
+    const handleFinalize = async () => {
+        if (!confirm(`${selectedMonth}の出欠を確定しますか？\n確定すると月謝の計算・集金が可能になります。`)) return
+
+        setFinalizing(true)
+        try {
+            const { error } = await supabase
+                .from('monthly_finalizations')
+                .upsert({
+                    month: selectedMonth,
+                    is_finalized: true,
+                    finalized_at: new Date().toISOString()
+                }, { onConflict: 'month' })
+
+            if (error) throw error
+            setIsFinalized(true)
+            alert('出欠を確定しました。月謝ページで集金作業を行ってください。')
+        } catch (error) {
+            console.error('Error finalizing month:', error)
+            alert('確定に失敗しました。')
+        } finally {
+            setFinalizing(false)
         }
     }
 
@@ -555,6 +609,40 @@ export default function AttendancePage() {
                                 </tbody>
                             </table>
                         </div>
+
+                        {/* Finalization Action */}
+                        {!isFinalized && gridData.activeDates.length > 0 && (
+                            <div className="px-4 pb-6">
+                                <Button
+                                    className="w-full h-12 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black flex items-center justify-center gap-2 shadow-lg shadow-amber-900/10"
+                                    onClick={handleFinalize}
+                                    disabled={finalizing || loading}
+                                >
+                                    {finalizing ? "確定中..." : (
+                                        <>
+                                            <CheckCircle2 className="h-4 w-4" />
+                                            {selectedMonth.split('-')[1]}月分の出欠を確定する
+                                        </>
+                                    )}
+                                </Button>
+                                <p className="text-[10px] text-center text-muted-foreground mt-2 italic">
+                                    ※ 出欠を確定すると、月謝ページで金額が表示されます。
+                                </p>
+                            </div>
+                        )}
+                        {isFinalized && (
+                            <div className="px-4 pb-6">
+                                <div className="w-full py-4 rounded-xl bg-emerald-50 border border-emerald-100 flex flex-col items-center justify-center gap-1">
+                                    <div className="flex items-center gap-2 text-emerald-600 font-black text-sm">
+                                        <CheckCircle2 className="h-4 w-4" />
+                                        出欠確定済み
+                                    </div>
+                                    <p className="text-[10px] text-emerald-600/70 font-bold uppercase tracking-widest">
+                                        月謝回収の準備ができています
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </main>

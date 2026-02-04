@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { cn } from '@/lib/utils'
 
 interface StudentFormProps {
     initialData?: {
@@ -16,6 +17,7 @@ interface StudentFormProps {
         emergency_contact?: string
         emergency_relationship?: string
         daily_rate?: number
+        has_bike_rental?: boolean
     }
     onSubmit: (data: any) => Promise<void>
     onCancel: () => void
@@ -28,6 +30,7 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
     const [address, setAddress] = useState(initialData?.address || '')
     const [gender, setGender] = useState(initialData?.gender || '')
     const [dailyRate, setDailyRate] = useState(initialData?.daily_rate?.toString() || '0')
+    const [hasBikeRental, setHasBikeRental] = useState(initialData?.has_bike_rental || false)
 
     // 日付の正規化 (2015/01/01 -> 2015-01-01 -> 1)
     const normalizeDate = (date?: string) => {
@@ -69,6 +72,7 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
             address: address || null,
             birth_date: bDate,
             daily_rate: parseInt(dailyRate) || 0,
+            has_bike_rental: hasBikeRental,
             emergency_contact: emergencyContact || null,
             emergency_relationship: emergencyRelationship || null
         })
@@ -111,16 +115,26 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
 
             <div className="space-y-2">
                 <Label htmlFor="daily_rate">1日あたりの月謝 (円)</Label>
-                <Input
-                    id="daily_rate"
-                    type="number"
-                    inputMode="numeric"
-                    placeholder="2000"
-                    value={dailyRate}
-                    onChange={(e) => setDailyRate(e.target.value)}
-                    required
-                    className="h-12"
-                />
+                <div className="flex gap-2">
+                    <Input
+                        id="daily_rate"
+                        type="number"
+                        inputMode="numeric"
+                        placeholder="2000"
+                        value={dailyRate}
+                        onChange={(e) => setDailyRate(e.target.value)}
+                        required
+                        className="h-12 flex-1"
+                    />
+                    <Button
+                        type="button"
+                        variant={hasBikeRental ? 'default' : 'outline'}
+                        className={cn("h-12 px-4 flex items-center gap-2", hasBikeRental && "bg-orange-500 hover:bg-orange-600 border-none")}
+                        onClick={() => setHasBikeRental(!hasBikeRental)}
+                    >
+                        レンタルバイク {hasBikeRental ? 'あり' : 'なし'}
+                    </Button>
+                </div>
             </div>
 
             <div className="space-y-2">
