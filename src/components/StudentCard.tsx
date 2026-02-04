@@ -1,8 +1,8 @@
+'use client'
+
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { EditStudentDrawer } from './EditStudentDrawer'
 import { cn } from '@/lib/utils'
-
 import { Trash2, Edit } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -17,6 +17,7 @@ interface StudentCardProps {
         birth_date?: string;
         emergency_contact?: string;
         emergency_relationship?: string;
+        daily_rate?: number;
     }
     onEdit?: (student: any) => void
 }
@@ -77,6 +78,14 @@ export function StudentCard({ student, onEdit }: StudentCardProps) {
                                     <span className="text-foreground font-medium">
                                         {student.birth_date}
                                         {age !== null && <span className="ml-2 text-primary">({age}歳)</span>}
+                                    </span>
+                                </div>
+                            )}
+                            {student.daily_rate !== undefined && (
+                                <div className="flex items-center gap-2">
+                                    <span className="text-muted-foreground w-12 shrink-0">月謝日額</span>
+                                    <span className="text-foreground font-black text-indigo-600">
+                                        {new Intl.NumberFormat('ja-JP').format(student.daily_rate)}円
                                     </span>
                                 </div>
                             )}

@@ -16,6 +16,7 @@ interface Student {
     birth_date?: string
     emergency_contact?: string
     emergency_relationship?: string
+    daily_rate?: number
 }
 
 export default function StudentsPage() {
