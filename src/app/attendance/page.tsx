@@ -165,7 +165,7 @@ function AttendanceContent() {
             setMonthlyRecords(data || [])
 
             // Fetch finalization status
-            const { data: fData, error: fError } = await supabase
+            const { data: fData } = await supabase
                 .from('monthly_finalizations')
                 .select('is_finalized')
                 .eq('month', selectedMonth)
@@ -190,6 +190,7 @@ function AttendanceContent() {
 
     // Save Daily
     const handleSaveDaily = async () => {
+        if (isFinalized) return
         setSaving(true)
         try {
             // Prepare records
@@ -261,7 +262,7 @@ function AttendanceContent() {
     }, [monthlyRecords])
 
     const handleUpdateStatus = async (status: 'present' | 'late' | 'absent' | 'none') => {
-        if (!editTarget) return
+        if (!editTarget || isFinalized) return
 
         const { id, date, isInstructor } = editTarget
         const record = gridData.attendance[id]?.[date]
@@ -348,8 +349,19 @@ function AttendanceContent() {
             <div className="bg-background border-b sticky top-0 z-30 pt-4 px-4 shadow-sm">
                 <div className="max-w-4xl mx-auto space-y-4">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <h1 className="text-xl font-bold text-foreground">出欠管理</h1>
+                        <div className="flex items-center gap-3 text-foreground">
+                            <h1 className="text-xl font-black italic uppercase tracking-tighter">Attendance</h1>
+                            {viewMode === 'monthly' && (
+                                <div className={cn(
+                                    "flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all",
+                                    isFinalized
+                                        ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                                        : "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                                )}>
+                                    <span className={cn("w-2 h-2 rounded-full animate-pulse", isFinalized ? "bg-emerald-500" : "bg-amber-500")} />
+                                    {isFinalized ? "確定済み" : "未確定"}
+                                </div>
+                            )}
                         </div>
                         <div className="flex p-1 bg-muted rounded-lg">
                             <Button
@@ -383,9 +395,10 @@ function AttendanceContent() {
                                     </Button>
                                     <input
                                         type="date"
-                                        className="bg-transparent border-none text-sm font-bold focus:ring-0 w-32 text-center text-foreground invert dark:invert-0"
+                                        className="bg-transparent border-none text-sm font-bold focus:ring-0 w-32 text-center text-foreground dark:invert-0"
                                         value={selectedDate}
                                         onChange={(e) => setSelectedDate(e.target.value)}
+                                        disabled={loading}
                                     />
                                     <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => changeDate(1)}>
                                         <ChevronRight className="h-4 w-4" />
@@ -398,9 +411,10 @@ function AttendanceContent() {
                                     </Button>
                                     <input
                                         type="month"
-                                        className="bg-transparent border-none text-sm font-bold focus:ring-0 w-36 text-center text-foreground invert dark:invert-0"
+                                        className="bg-transparent border-none text-sm font-bold focus:ring-0 w-36 text-center text-foreground dark:invert-0"
                                         value={selectedMonth}
                                         onChange={(e) => setSelectedMonth(e.target.value)}
+                                        disabled={loading}
                                     />
                                     <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => changeMonth(1)}>
                                         <ChevronRight className="h-4 w-4" />
@@ -419,6 +433,7 @@ function AttendanceContent() {
                                         className="w-full bg-muted border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none text-foreground"
                                         value={dailyLocation}
                                         onChange={(e) => setDailyLocation(e.target.value)}
+                                        disabled={isFinalized}
                                     />
                                     <datalist id="location-history">
                                         {locationHistory.map(loc => (
@@ -426,20 +441,6 @@ function AttendanceContent() {
                                         ))}
                                     </datalist>
                                 </div>
-                                {locationHistory.length > 0 && (
-                                    <div className="flex flex-wrap gap-1.5">
-                                        {locationHistory.slice(0, 5).map(loc => (
-                                            <button
-                                                key={loc}
-                                                type="button"
-                                                className="text-[10px] bg-muted hover:bg-secondary text-muted-foreground px-2 py-0.5 rounded-full transition-colors"
-                                                onClick={() => setDailyLocation(loc)}
-                                            >
-                                                {loc}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
                             </div>
                         )}
                     </div>
@@ -451,316 +452,327 @@ function AttendanceContent() {
                     <div className="p-4 space-y-6">
                         {/* Student Section */}
                         <div className="space-y-2">
-                            <div className="flex justify-between items-center py-2 px-3 text-xs font-bold text-blue-700 bg-blue-50/50 rounded-md border border-blue-100">
-                                <span>生徒</span>
-                                <span>出欠チェック</span>
+                            <div className="flex justify-between items-center py-2 px-3 text-xs font-bold text-blue-700 bg-blue-50/50 rounded-md border border-blue-100 uppercase tracking-widest">
+                                <span>生徒 / Students</span>
+                                <span>出席状況</span>
                             </div>
                             {loading ? (
-                                Array(5).fill(0).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-xl" />)
+                                Array(5).fill(0).map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-2xl" />)
                             ) : students.length === 0 ? (
-                                <p className="text-center py-10 text-gray-400 text-sm italic">生徒が登録されていません</p>
+                                <p className="text-center py-10 text-muted-foreground text-sm italic">生徒が登録されていません</p>
                             ) : (
                                 students.map(student => (
-                                    key = { student.id }
-                                        className = {
-                                        cn(
-                                            "flex items-center justify-between p-4 rounded-xl border transition-all",
-                                            !isFinalized && "cursor-pointer",
-                                    dailyStudentAttendance[student.id]
-                                        ? 'bg-green-500/10 border-green-500/50'
-                                        : 'bg-background border-border grayscale-[0.5]'
-                                )}
-                            onClick={() => toggleDailyS(student.id)}
+                                    <div
+                                        key={student.id}
+                                        className={cn(
+                                            "flex items-center justify-between p-4 rounded-2xl border transition-all",
+                                            !isFinalized && "cursor-pointer active:scale-[0.98]",
+                                            dailyStudentAttendance[student.id]
+                                                ? 'bg-emerald-500/10 border-emerald-500/50 shadow-sm shadow-emerald-500/10'
+                                                : 'bg-background border-border opacity-60'
+                                        )}
+                                        onClick={() => toggleDailyS(student.id)}
                                     >
-                            <div className="min-w-0">
-                                <p className="text-[10px] text-muted-foreground truncate leading-tight">{student.furigana}</p>
-                                <h3 className="font-bold text-foreground">{student.name}</h3>
-                            </div>
-                            <div className={`h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all ${dailyStudentAttendance[student.id]
-                                ? 'bg-green-600 border-green-600'
-                                : 'bg-background border-border'
-                                }`}>
-                                {dailyStudentAttendance[student.id] && <CheckCircle2 className="h-5 w-5 text-white" />}
-                            </div>
-                        </div>
-                        ))
+                                        <div className="min-w-0">
+                                            <p className="text-[10px] text-muted-foreground truncate leading-tight font-mono">{student.furigana}</p>
+                                            <h3 className="font-black text-foreground text-lg tracking-tight">{student.name}</h3>
+                                        </div>
+                                        <div className={`h-10 w-10 rounded-full flex items-center justify-center border-2 transition-all ${dailyStudentAttendance[student.id]
+                                            ? 'bg-emerald-500 border-emerald-500'
+                                            : 'bg-background border-border/50'
+                                            }`}>
+                                            {dailyStudentAttendance[student.id] && <CheckCircle2 className="h-6 w-6 text-white" />}
+                                        </div>
+                                    </div>
+                                ))
                             )}
-                    </div>
+                        </div>
 
                         {/* Instructor Section */}
-                <div className="space-y-2">
-                    <div className="flex justify-between items-center py-2 px-3 text-xs font-bold text-orange-700 bg-orange-50/50 rounded-md border border-orange-100">
-                        <span>講師</span>
-                        <span>出欠チェック</span>
-                    </div>
-                    {loading ? (
-                        <Skeleton className="h-20 w-full rounded-xl" />
-                    ) : instructors.length === 0 ? (
-                        <div className="text-center py-6 bg-gray-50 border border-dashed rounded-xl">
-                            <p className="text-gray-400 text-xs mb-2">講師が登録されていません</p>
-                            <p className="text-[10px] text-muted-foreground italic">設定ページから登録してください</p>
-                        </div>
-                    ) : (
-                        instructors.map(ins => {
-                            const status = dailyInstructorStatus[ins.id] || 'absent'
-                            return (
-                                <div
-                                    key={ins.id}
-                                    className={cn(
-                                        "flex items-center justify-between p-4 rounded-xl border transition-all",
-                                        !isFinalized && "cursor-pointer",
-                                        status === 'present' ? 'bg-orange-500/10 border-orange-500/50' :
-                                            status === 'late' ? 'bg-yellow-500/10 border-yellow-500/50' :
-                                                'bg-background border-border grayscale-[0.8]'
-                                    )}
-                                    onClick={() => toggleDailyI(ins.id)}
-                                >
-                                    <div className="min-w-0">
-                                        <p className="text-[10px] text-muted-foreground truncate leading-tight">{ins.furigana}</p>
-                                        <h3 className="font-bold text-foreground">{ins.name}</h3>
-                                    </div>
-                                    <div className={`h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all ${status === 'present' ? 'bg-orange-600 border-orange-600' :
-                                        status === 'late' ? 'bg-yellow-600 border-yellow-600' :
-                                            'bg-background border-border'
-                                        }`}>
-                                        {status === 'present' ? <CheckCircle2 className="h-5 w-5 text-white" /> :
-                                            status === 'late' ? <span className="text-white font-bold text-sm">▲</span> : null}
-                                    </div>
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center py-2 px-3 text-xs font-bold text-orange-700 bg-orange-50/50 rounded-md border border-orange-100 uppercase tracking-widest">
+                                <span>講師 / Instructors</span>
+                                <span>出勤状況</span>
+                            </div>
+                            {loading ? (
+                                <Skeleton className="h-24 w-full rounded-2xl" />
+                            ) : instructors.length === 0 ? (
+                                <div className="text-center py-10 border-2 border-dashed border-muted rounded-2xl">
+                                    <p className="text-muted-foreground text-sm italic">講師が登録されていません</p>
                                 </div>
-                            )
-                        })
-                    )}
-                </div>
-        </div>
-    ) : (
-        <div className="h-full flex flex-col pt-4 overflow-hidden">
-            <div className="flex-1 overflow-auto border border-border rounded-xl mx-4 mb-4 bg-background shadow-sm">
-                <table className="w-full border-collapse text-[10px]">
-                    <thead className="sticky top-0 z-20 bg-muted shadow-sm">
-                        <tr>
-                            <th className="sticky left-0 z-30 bg-muted p-2 border border-border text-left font-bold min-w-[80px] text-foreground">氏名</th>
-                            {gridData.activeDates.map(dateStr => (
-                                <th key={dateStr} className="p-1 border border-border text-center font-medium min-w-[40px] text-foreground">
-                                    {new Date(dateStr).getDate()}日
-                                </th>
-                            ))}
-                            <th className="p-2 border border-border text-center font-bold bg-primary/20 text-primary min-w-[50px]">合計</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {/* Student Header Rows */}
-                        <tr className="bg-blue-500/10 font-bold text-[8px] text-blue-600 dark:text-blue-400">
-                            <td colSpan={gridData.activeDates.length + 2} className="px-2 py-1 border border-border">生徒</td>
-                        </tr>
-                        {students.map(student => (
-                            <tr key={student.id} className="hover:bg-muted/50 transition-colors">
-                                <td className="sticky left-0 z-10 bg-background p-2 border border-border font-bold truncate max-w-[100px] border-r-border shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] text-foreground">
-                                    {student.name}
-                                </td>
-                                {gridData.activeDates.map(dateStr => {
-                                    const record = gridData.attendance[student.id]?.[dateStr]
-                                    const status = record?.status
+                            ) : (
+                                instructors.map(ins => {
+                                    const status = dailyInstructorStatus[ins.id] || 'absent'
                                     return (
-                                        key = { dateStr }
-                                                        className = {
-                                        cn(
-                                                            "p-1 border border-border text-center",
-                                                            !isFinalized && "cursor-pointer hover:bg-green-500/10"
+                                        <div
+                                            key={ins.id}
+                                            className={cn(
+                                                "flex items-center justify-between p-4 rounded-2xl border transition-all",
+                                                !isFinalized && "cursor-pointer active:scale-[0.98]",
+                                                status === 'present' ? 'bg-orange-500/10 border-orange-500/50' :
+                                                    status === 'late' ? 'bg-yellow-500/10 border-yellow-500/50' :
+                                                        'bg-background border-border opacity-40'
+                                            )}
+                                            onClick={() => toggleDailyI(ins.id)}
+                                        >
+                                            <div className="min-w-0">
+                                                <p className="text-[10px] text-muted-foreground truncate leading-tight font-mono">{ins.furigana}</p>
+                                                <h3 className="font-black text-foreground text-lg tracking-tight">{ins.name}</h3>
+                                            </div>
+                                            <div className={`h-10 w-10 rounded-full flex items-center justify-center border-2 transition-all ${status === 'present' ? 'bg-orange-500 border-orange-500' :
+                                                status === 'late' ? 'bg-yellow-500 border-yellow-500' :
+                                                    'bg-background border-border/50'
+                                                }`}>
+                                                {status === 'present' ? <CheckCircle2 className="h-6 w-6 text-white" /> :
+                                                    status === 'late' ? <span className="text-white font-black text-xl">▲</span> : null}
+                                            </div>
+                                        </div>
+                                    )
+                                })
+                            )}
+                        </div>
+                    </div>
+                ) : (
+                    <div className="h-full flex flex-col pt-4 overflow-hidden">
+                        <div className="flex-1 overflow-auto border border-border rounded-2xl mx-4 mb-4 bg-background shadow-sm">
+                            <table className="w-full border-collapse text-[10px]">
+                                <thead className="sticky top-0 z-20 bg-muted/95 backdrop-blur-sm shadow-sm">
+                                    <tr>
+                                        <th className="sticky left-0 z-30 bg-muted p-2 border border-border text-left font-black min-w-[80px] text-foreground uppercase tracking-wider">氏名</th>
+                                        {gridData.activeDates.map(dateStr => (
+                                            <th key={dateStr} className="p-1 border border-border text-center font-bold min-w-[40px] text-foreground">
+                                                {new Date(dateStr).getDate()}
+                                            </th>
+                                        ))}
+                                        <th className="p-2 border border-border text-center font-black bg-primary/10 text-primary min-w-[50px]">合計</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr className="bg-blue-500/5 font-black text-[8px] text-blue-600 dark:text-blue-400 uppercase tracking-widest leading-loose">
+                                        <td colSpan={gridData.activeDates.length + 2} className="px-3 py-0.5 border border-border">生徒 / Students</td>
+                                    </tr>
+                                    {students.map(student => (
+                                        <tr key={student.id} className="hover:bg-muted/50 transition-colors">
+                                            <td className="sticky left-0 z-10 bg-background p-2 border border-border font-black truncate max-w-[100px] border-r-border shadow-[2px_0_10px_-4px_rgba(0,0,0,0.1)] text-foreground">
+                                                {student.name}
+                                            </td>
+                                            {gridData.activeDates.map(dateStr => {
+                                                const record = gridData.attendance[student.id]?.[dateStr]
+                                                const status = record?.status
+                                                return (
+                                                    <td
+                                                        key={dateStr}
+                                                        className={cn(
+                                                            "p-1 border border-border text-center transition-colors",
+                                                            !isFinalized && "cursor-pointer hover:bg-emerald-500/20"
                                                         )}
-                                onClick={() => !isFinalized && setEditTarget({
-                                    id: student.id,
-                                    name: student.name,
-                                    date: dateStr,
-                                    status: record?.status || null,
-                                    isInstructor: false
-                                })}
+                                                        onClick={() => !isFinalized && setEditTarget({
+                                                            id: student.id,
+                                                            name: student.name,
+                                                            date: dateStr,
+                                                            status: record?.status || null,
+                                                            isInstructor: false
+                                                        })}
                                                     >
-                                {status === 'present' ? <span className="text-green-600 font-bold text-sm">●</span> : status === 'absent' ? <span className="text-muted-foreground/30">・</span> : null}
-                            </td>
-                        )
+                                                        {status === 'present' ? <span className="text-emerald-600 font-black text-sm drop-shadow-sm">●</span> : status === 'absent' ? <span className="text-muted-foreground/20">・</span> : null}
+                                                    </td>
+                                                )
                                             })}
-                        <td className="p-1 border border-border text-center font-bold bg-muted/30 text-foreground">{gridData.totals[student.id] || 0}</td>
-                    </tr>
+                                            <td className="p-1 border border-border text-center font-black bg-muted/30 text-foreground tabular-nums">{gridData.totals[student.id] || 0}</td>
+                                        </tr>
                                     ))}
 
-                    {/* Instructor Header Rows */}
-                    {instructors.length > 0 && (
-                        <tr className="bg-orange-500/10 font-bold text-[8px] text-orange-600 dark:text-orange-400">
-                            <td colSpan={gridData.activeDates.length + 2} className="px-2 py-1 border border-border">講師</td>
-                        </tr>
-                    )}
-                    {instructors.map(ins => (
-                        <tr key={ins.id} className="hover:bg-orange-500/10 transition-colors bg-orange-500/5">
-                            <td className="sticky left-0 z-10 bg-background p-2 border border-border font-bold truncate max-w-[100px] border-r-border shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] text-foreground">
-                                {ins.name}
-                            </td>
-                            {gridData.activeDates.map(dateStr => {
-                                const record = gridData.attendance[ins.id]?.[dateStr]
-                                const status = record?.status
-                                return (
-                                    <td
-                                        key={dateStr}
-                                        className={cn(
-                                            "p-1 border border-border text-center",
-                                            !isFinalized && "cursor-pointer hover:bg-orange-500/10"
-                                        )}
-                                        onClick={() => !isFinalized && setEditTarget({
-                                            id: ins.id,
-                                            name: ins.name,
-                                            date: dateStr,
-                                            status: record?.status || null,
-                                            isInstructor: true
-                                        })}
-                                    >
-                                        {status === 'present' ? <span className="text-orange-600 font-bold text-sm">●</span> :
-                                            status === 'late' ? <span className="text-yellow-600 font-bold text-sm">▲</span> :
-                                                status === 'absent' ? <span className="text-muted-foreground/30">・</span> : null}
-                                    </td>
-                                )
-                            })}
-                            <td className="p-1 border border-border text-center font-bold bg-muted/30 text-foreground">{gridData.totals[ins.id] || 0}</td>
-                        </tr>
-                    ))}
+                                    {instructors.length > 0 && (
+                                        <tr className="bg-orange-500/5 font-black text-[8px] text-orange-600 dark:text-orange-400 uppercase tracking-widest leading-loose">
+                                            <td colSpan={gridData.activeDates.length + 2} className="px-3 py-0.5 border border-border">講師 / Instructors</td>
+                                        </tr>
+                                    )}
+                                    {instructors.map(ins => (
+                                        <tr key={ins.id} className="hover:bg-orange-500/5 transition-colors">
+                                            <td className="sticky left-0 z-10 bg-background p-2 border border-border font-black truncate max-w-[100px] border-r-border shadow-[2px_0_10px_-4px_rgba(0,0,0,0.1)] text-foreground">
+                                                {ins.name}
+                                            </td>
+                                            {gridData.activeDates.map(dateStr => {
+                                                const record = gridData.attendance[ins.id]?.[dateStr]
+                                                const status = record?.status
+                                                return (
+                                                    <td
+                                                        key={dateStr}
+                                                        className={cn(
+                                                            "p-1 border border-border text-center transition-colors",
+                                                            !isFinalized && "cursor-pointer hover:bg-orange-500/20"
+                                                        )}
+                                                        onClick={() => !isFinalized && setEditTarget({
+                                                            id: ins.id,
+                                                            name: ins.name,
+                                                            date: dateStr,
+                                                            status: record?.status || null,
+                                                            isInstructor: true
+                                                        })}
+                                                    >
+                                                        {status === 'present' ? <span className="text-orange-600 font-black text-sm drop-shadow-sm">●</span> :
+                                                            status === 'late' ? <span className="text-yellow-600 font-black text-sm drop-shadow-sm">▲</span> :
+                                                                status === 'absent' ? <span className="text-muted-foreground/20">・</span> : null}
+                                                    </td>
+                                                )
+                                            })}
+                                            <td className="p-1 border border-border text-center font-black bg-muted/30 text-foreground tabular-nums">{gridData.totals[ins.id] || 0}</td>
+                                        </tr>
+                                    ))}
 
-                    {/* Location Row */}
-                    <tr className="bg-muted/50 text-foreground">
-                        <td className="sticky left-0 z-10 bg-muted p-2 border border-border font-bold text-[8px] text-muted-foreground">実施場所</td>
-                        {gridData.activeDates.map(dateStr => (
-                            <td key={dateStr} className="p-1 border border-border text-center text-[8px] leading-tight text-muted-foreground">{gridData.locations[dateStr] || "-"}</td>
-                        ))}
-                        <td className="border border-border"></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+                                    <tr className="bg-muted text-[8px] font-black text-muted-foreground uppercase tracking-widest">
+                                        <td className="sticky left-0 z-10 bg-muted p-2 border border-border">実施場所</td>
+                                        {gridData.activeDates.map(dateStr => (
+                                            <td key={dateStr} className="p-1 border border-border text-center truncate italic max-w-[40px] px-0.5">{gridData.locations[dateStr] || "-"}</td>
+                                        ))}
+                                        <td className="border border-border"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
 
-                        {/* Finalization Action */ }
-    {
-        !isFinalized && gridData.activeDates.length > 0 && (
-            <div className="px-4 pb-6">
-                <Button
-                    className="w-full h-12 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black flex items-center justify-center gap-2 shadow-lg shadow-amber-900/10"
-                    onClick={handleFinalize}
-                    disabled={finalizing || loading}
-                >
-                    {finalizing ? "確定中..." : (
-                        <>
-                            <CheckCircle2 className="h-4 w-4" />
-                            {selectedMonth.split('-')[1]}月分の出欠を確定する
-                        </>
-                    )}
-                </Button>
-                <p className="text-[10px] text-center text-muted-foreground mt-2 italic">
-                    ※ 出欠を確定すると、月謝ページで金額が表示されます。
-                </p>
-            </div>
-        )
-    }
-    {
-        isFinalized && (
-            <div className="px-4 pb-6">
-                <div className="w-full py-4 rounded-xl bg-emerald-50 border border-emerald-100 flex flex-col items-center justify-center gap-1">
-                    <div className="flex items-center gap-2 text-emerald-600 font-black text-sm">
-                        <CheckCircle2 className="h-4 w-4" />
-                        出欠確定済み
+                        {/* Finalization Action */}
+                        {!isFinalized && gridData.activeDates.length > 0 && (
+                            <div className="px-4 pb-6">
+                                <Button
+                                    className="w-full h-12 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-black flex items-center justify-center gap-2 shadow-lg shadow-amber-900/10 transition-transform active:scale-[0.98]"
+                                    onClick={handleFinalize}
+                                    disabled={finalizing || loading}
+                                >
+                                    {finalizing ? "確定中..." : (
+                                        <>
+                                            <CheckCircle2 className="h-4 w-4" />
+                                            {selectedMonth.split('-')[1]}月分の出欠を確定する
+                                        </>
+                                    )}
+                                </Button>
+                                <p className="text-[10px] text-center text-muted-foreground mt-2 font-bold italic">
+                                    ※ 出欠を確定すると、月謝ページで合計金額が表示されます。
+                                </p>
+                            </div>
+                        )}
+                        {isFinalized && (
+                            <div className="px-4 pb-6">
+                                <div className="w-full py-4 rounded-2xl bg-emerald-500/5 border-2 border-dashed border-emerald-500/20 flex flex-col items-center justify-center gap-1">
+                                    <div className="flex items-center gap-2 text-emerald-600 font-black text-sm">
+                                        <CheckCircle2 className="h-5 w-5" />
+                                        出欠確定済み / LOCKED
+                                    </div>
+                                    <p className="text-[10px] text-emerald-600/70 font-black uppercase tracking-widest">
+                                        月謝回収の準備ができています
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                    <p className="text-[10px] text-emerald-600/70 font-bold uppercase tracking-widest">
-                        月謝回収の準備ができています
-                    </p>
-                </div>
-            </div>
-        )
-    }
-                    </div >
-                )
-}
-            </main >
+                )}
+            </main>
 
-    {/* Bottom Save Button (only for daily) */ }
-{
-    viewMode === 'daily' && (
-        <div className="fixed bottom-20 inset-x-0 p-4 max-w-md mx-auto z-40">
-            <Button
-                className="w-full h-14 rounded-full shadow-2xl bg-primary hover:bg-primary/90 text-lg font-bold flex items-center justify-center gap-2"
-                onClick={handleSaveDaily}
-                disabled={saving || loading}
-            >
-                {saving ? "保存中..." : (
-                    <>
-                        {isFinalized ? (
+            {/* Bottom Save Button (only for daily) */}
+            {viewMode === 'daily' && (
+                <div className="fixed bottom-20 inset-x-0 p-4 max-w-lg mx-auto z-40">
+                    <Button
+                        className={cn(
+                            "w-full h-14 rounded-full shadow-2xl font-black text-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
+                            isFinalized
+                                ? "bg-muted text-muted-foreground border-2 border-border"
+                                : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-900/20"
+                        )}
+                        onClick={handleSaveDaily}
+                        disabled={saving || loading || isFinalized}
+                    >
+                        {saving ? "保存中..." : (
                             <>
-                                <CheckCircle2 className="h-5 w-5" />
-                                確定済み (編集不可)
-                            </>
-                        ) : (
-                            <>
-                                <Save className="h-5 w-5" />
-                                出欠を保存する
+                                {isFinalized ? (
+                                    <>
+                                        <CheckCircle2 className="h-6 w-6" />
+                                        確定済み (編集不可)
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="h-6 w-6" />
+                                        出欠を保存する
+                                    </>
+                                )}
                             </>
                         )}
-                    </>
-                )}
-            </Button>
-        </div>
-    )
-}
-
-{/* Attendance Edit Drawer */ }
-<Drawer open={!!editTarget} onOpenChange={(open) => !open && setEditTarget(null)}>
-    <DrawerContent>
-        <div className="mx-auto w-full max-w-sm p-6">
-            <DrawerHeader className="px-0">
-                <DrawerTitle className="text-center">
-                    {editTarget?.name}
-                    <div className="text-sm font-normal text-muted-foreground mt-1">
-                        {editTarget?.date.replace(/-/g, '/')} の出欠
-                    </div>
-                </DrawerTitle>
-            </DrawerHeader>
-            <div className="grid grid-cols-2 gap-3 mt-4">
-                <Button
-                    variant={editTarget?.status === 'present' ? 'default' : 'outline'}
-                    className={`h-16 text-lg font-bold flex flex-col items-center justify-center gap-1 ${editTarget?.status === 'present' ? 'bg-green-600 hover:bg-green-700' : ''}`}
-                    onClick={() => handleUpdateStatus('present')}
-                >
-                    <span className="text-xl">●</span>
-                    出席
-                </Button>
-                <Button
-                    variant={editTarget?.status === 'absent' ? 'default' : 'outline'}
-                    className="h-16 text-lg font-bold flex flex-col items-center justify-center gap-1"
-                    onClick={() => handleUpdateStatus('absent')}
-                >
-                    <span className="text-xl">・</span>
-                    欠席
-                </Button>
-                {editTarget?.isInstructor && (
-                    <Button
-                        variant={editTarget?.status === 'late' ? 'default' : 'outline'}
-                        className={`h-16 text-lg font-bold flex flex-col items-center justify-center gap-1 col-span-2 ${editTarget?.status === 'late' ? 'bg-yellow-600 hover:bg-yellow-700' : ''}`}
-                        onClick={() => handleUpdateStatus('late')}
-                    >
-                        <span className="text-xl">▲</span>
-                        遅刻
                     </Button>
-                )}
-                <Button
-                    variant="ghost"
-                    className="h-12 text-muted-foreground col-span-2 mt-2"
-                    onClick={() => handleUpdateStatus('none')}
-                >
-                    <X className="h-4 w-4 mr-2" />
-                    記録を消去
-                </Button>
-            </div>
-            <DrawerFooter className="px-0 mt-6 pb-8">
-                <DrawerClose asChild>
-                    <Button variant="outline" className="w-full h-12">キャンセル</Button>
-                </DrawerClose>
-            </DrawerFooter>
+                </div>
+            )}
+
+            {/* Attendance Edit Drawer */}
+            <Drawer open={!!editTarget} onOpenChange={(open) => !open && setEditTarget(null)}>
+                <DrawerContent>
+                    <div className="mx-auto w-full max-w-sm p-6">
+                        <DrawerHeader className="px-0">
+                            <DrawerTitle className="text-center">
+                                <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Attendance Update</div>
+                                <div className="text-2xl font-black italic tracking-tighter">{editTarget?.name}</div>
+                                <div className="text-xs font-bold text-muted-foreground mt-1 flex items-center justify-center gap-1">
+                                    <CalendarIcon className="h-3 w-3" />
+                                    {editTarget?.date.replace(/-/g, '/')}
+                                </div>
+                            </DrawerTitle>
+                        </DrawerHeader>
+                        <div className="grid grid-cols-2 gap-3 mt-4">
+                            <Button
+                                variant={editTarget?.status === 'present' ? 'default' : 'outline'}
+                                className={cn(
+                                    "h-20 text-lg font-black flex flex-col items-center justify-center gap-1 rounded-2xl border-2 transition-all",
+                                    editTarget?.status === 'present'
+                                        ? 'bg-emerald-500 hover:bg-emerald-600 border-emerald-600 shadow-lg shadow-emerald-500/20'
+                                        : 'hover:bg-emerald-50 border-border'
+                                )}
+                                onClick={() => handleUpdateStatus('present')}
+                            >
+                                <span className="text-2xl">●</span>
+                                出席
+                            </Button>
+                            <Button
+                                variant={editTarget?.status === 'absent' ? 'default' : 'outline'}
+                                className={cn(
+                                    "h-20 text-lg font-black flex flex-col items-center justify-center gap-1 rounded-2xl border-2 transition-all",
+                                    editTarget?.status === 'absent'
+                                        ? 'bg-muted-foreground text-white border-muted-foreground'
+                                        : 'hover:bg-muted border-border'
+                                )}
+                                onClick={() => handleUpdateStatus('absent')}
+                            >
+                                <span className="text-2xl">・</span>
+                                欠席
+                            </Button>
+                            {editTarget?.isInstructor && (
+                                <Button
+                                    variant={editTarget?.status === 'late' ? 'default' : 'outline'}
+                                    className={cn(
+                                        "h-20 text-lg font-black flex flex-col items-center justify-center gap-1 col-span-2 rounded-2xl border-2 transition-all",
+                                        editTarget?.status === 'late'
+                                            ? 'bg-yellow-500 hover:bg-yellow-600 border-yellow-600 shadow-lg shadow-yellow-500/20 text-white'
+                                            : 'hover:bg-yellow-50 border-border'
+                                    )}
+                                    onClick={() => handleUpdateStatus('late')}
+                                >
+                                    <span className="text-2xl font-black">▲</span>
+                                    遅刻 / LATE
+                                </Button>
+                            )}
+                            <Button
+                                variant="ghost"
+                                className="h-14 text-muted-foreground font-black text-xs uppercase tracking-widest col-span-2 mt-4 rounded-xl border-2 border-dashed border-border hover:bg-destructive/5 hover:text-destructive hover:border-destructive/20 transition-all"
+                                onClick={() => handleUpdateStatus('none')}
+                            >
+                                <X className="h-4 w-4 mr-2" />
+                                記録を消去 / CLEAR
+                            </Button>
+                        </div>
+                        <DrawerFooter className="px-0 mt-8 pb-10">
+                            <DrawerClose asChild>
+                                <Button variant="outline" className="w-full h-14 rounded-2xl font-black uppercase tracking-widest">Cancel</Button>
+                            </DrawerClose>
+                        </DrawerFooter>
+                    </div>
+                </DrawerContent>
+            </Drawer>
         </div>
-    </DrawerContent>
-</Drawer>
-        </div >
     )
 }
