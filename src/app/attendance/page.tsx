@@ -130,6 +130,16 @@ function AttendanceContent() {
             }
             setDailyStudentAttendance(sMapping)
             setDailyInstructorStatus(iMapping)
+
+            // Check if this date's month is finalized
+            const monthOfDate = selectedDate.slice(0, 7)
+            const { data: fData } = await supabase
+                .from('monthly_finalizations')
+                .select('is_finalized')
+                .eq('month', monthOfDate)
+                .single()
+
+            setIsFinalized(fData?.is_finalized || false)
         } catch (error) {
             console.error('Error fetching daily data:', error)
         } finally {
@@ -305,9 +315,11 @@ function AttendanceContent() {
     }
 
     const toggleDailyS = (id: string) => {
+        if (isFinalized) return
         setDailyStudentAttendance(prev => ({ ...prev, [id]: !prev[id] }))
     }
     const toggleDailyI = (id: string) => {
+        if (isFinalized) return
         setDailyInstructorStatus(prev => {
             const current = prev[id] || 'absent'
             let next: 'present' | 'late' | 'absent' = 'present'
@@ -449,278 +461,306 @@ function AttendanceContent() {
                                 <p className="text-center py-10 text-gray-400 text-sm italic">生徒が登録されていません</p>
                             ) : (
                                 students.map(student => (
-                                    <div
-                                        key={student.id}
-                                        className={`flex items-center justify-between p-4 rounded-xl border transition-all cursor-pointer ${dailyStudentAttendance[student.id]
-                                            ? 'bg-green-500/10 border-green-500/50'
-                                            : 'bg-background border-border grayscale-[0.5]'
-                                            }`}
-                                        onClick={() => toggleDailyS(student.id)}
+                                    key = { student.id }
+                                        className = {
+                                        cn(
+                                            "flex items-center justify-between p-4 rounded-xl border transition-all",
+                                            !isFinalized && "cursor-pointer",
+                                    dailyStudentAttendance[student.id]
+                                        ? 'bg-green-500/10 border-green-500/50'
+                                        : 'bg-background border-border grayscale-[0.5]'
+                                )}
+                            onClick={() => toggleDailyS(student.id)}
                                     >
-                                        <div className="min-w-0">
-                                            <p className="text-[10px] text-muted-foreground truncate leading-tight">{student.furigana}</p>
-                                            <h3 className="font-bold text-foreground">{student.name}</h3>
-                                        </div>
-                                        <div className={`h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all ${dailyStudentAttendance[student.id]
-                                            ? 'bg-green-600 border-green-600'
-                                            : 'bg-background border-border'
-                                            }`}>
-                                            {dailyStudentAttendance[student.id] && <CheckCircle2 className="h-5 w-5 text-white" />}
-                                        </div>
-                                    </div>
-                                ))
-                            )}
+                            <div className="min-w-0">
+                                <p className="text-[10px] text-muted-foreground truncate leading-tight">{student.furigana}</p>
+                                <h3 className="font-bold text-foreground">{student.name}</h3>
+                            </div>
+                            <div className={`h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all ${dailyStudentAttendance[student.id]
+                                ? 'bg-green-600 border-green-600'
+                                : 'bg-background border-border'
+                                }`}>
+                                {dailyStudentAttendance[student.id] && <CheckCircle2 className="h-5 w-5 text-white" />}
+                            </div>
                         </div>
+                        ))
+                            )}
+                    </div>
 
                         {/* Instructor Section */}
-                        <div className="space-y-2">
-                            <div className="flex justify-between items-center py-2 px-3 text-xs font-bold text-orange-700 bg-orange-50/50 rounded-md border border-orange-100">
-                                <span>講師</span>
-                                <span>出欠チェック</span>
-                            </div>
-                            {loading ? (
-                                <Skeleton className="h-20 w-full rounded-xl" />
-                            ) : instructors.length === 0 ? (
-                                <div className="text-center py-6 bg-gray-50 border border-dashed rounded-xl">
-                                    <p className="text-gray-400 text-xs mb-2">講師が登録されていません</p>
-                                    <p className="text-[10px] text-muted-foreground italic">設定ページから登録してください</p>
-                                </div>
-                            ) : (
-                                instructors.map(ins => {
-                                    const status = dailyInstructorStatus[ins.id] || 'absent'
-                                    return (
-                                        <div
-                                            key={ins.id}
-                                            className={`flex items-center justify-between p-4 rounded-xl border transition-all cursor-pointer ${status === 'present' ? 'bg-orange-500/10 border-orange-500/50' :
-                                                status === 'late' ? 'bg-yellow-500/10 border-yellow-500/50' :
-                                                    'bg-background border-border grayscale-[0.8]'
-                                                }`}
-                                            onClick={() => toggleDailyI(ins.id)}
-                                        >
-                                            <div className="min-w-0">
-                                                <p className="text-[10px] text-muted-foreground truncate leading-tight">{ins.furigana}</p>
-                                                <h3 className="font-bold text-foreground">{ins.name}</h3>
-                                            </div>
-                                            <div className={`h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all ${status === 'present' ? 'bg-orange-600 border-orange-600' :
-                                                status === 'late' ? 'bg-yellow-600 border-yellow-600' :
-                                                    'bg-background border-border'
-                                                }`}>
-                                                {status === 'present' ? <CheckCircle2 className="h-5 w-5 text-white" /> :
-                                                    status === 'late' ? <span className="text-white font-bold text-sm">▲</span> : null}
-                                            </div>
-                                        </div>
-                                    )
-                                })
-                            )}
-                        </div>
+                <div className="space-y-2">
+                    <div className="flex justify-between items-center py-2 px-3 text-xs font-bold text-orange-700 bg-orange-50/50 rounded-md border border-orange-100">
+                        <span>講師</span>
+                        <span>出欠チェック</span>
                     </div>
-                ) : (
-                    <div className="h-full flex flex-col pt-4 overflow-hidden">
-                        <div className="flex-1 overflow-auto border border-border rounded-xl mx-4 mb-4 bg-background shadow-sm">
-                            <table className="w-full border-collapse text-[10px]">
-                                <thead className="sticky top-0 z-20 bg-muted shadow-sm">
-                                    <tr>
-                                        <th className="sticky left-0 z-30 bg-muted p-2 border border-border text-left font-bold min-w-[80px] text-foreground">氏名</th>
-                                        {gridData.activeDates.map(dateStr => (
-                                            <th key={dateStr} className="p-1 border border-border text-center font-medium min-w-[40px] text-foreground">
-                                                {new Date(dateStr).getDate()}日
-                                            </th>
-                                        ))}
-                                        <th className="p-2 border border-border text-center font-bold bg-primary/20 text-primary min-w-[50px]">合計</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {/* Student Header Rows */}
-                                    <tr className="bg-blue-500/10 font-bold text-[8px] text-blue-600 dark:text-blue-400">
-                                        <td colSpan={gridData.activeDates.length + 2} className="px-2 py-1 border border-border">生徒</td>
-                                    </tr>
-                                    {students.map(student => (
-                                        <tr key={student.id} className="hover:bg-muted/50 transition-colors">
-                                            <td className="sticky left-0 z-10 bg-background p-2 border border-border font-bold truncate max-w-[100px] border-r-border shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] text-foreground">
-                                                {student.name}
-                                            </td>
-                                            {gridData.activeDates.map(dateStr => {
-                                                const record = gridData.attendance[student.id]?.[dateStr]
-                                                const status = record?.status
-                                                return (
-                                                    <td
-                                                        key={dateStr}
-                                                        className="p-1 border border-border text-center cursor-pointer hover:bg-green-500/10"
-                                                        onClick={() => setEditTarget({
-                                                            id: student.id,
-                                                            name: student.name,
-                                                            date: dateStr,
-                                                            status: record?.status || null,
-                                                            isInstructor: false
-                                                        })}
-                                                    >
-                                                        {status === 'present' ? <span className="text-green-600 font-bold text-sm">●</span> : status === 'absent' ? <span className="text-muted-foreground/30">・</span> : null}
-                                                    </td>
-                                                )
-                                            })}
-                                            <td className="p-1 border border-border text-center font-bold bg-muted/30 text-foreground">{gridData.totals[student.id] || 0}</td>
-                                        </tr>
-                                    ))}
-
-                                    {/* Instructor Header Rows */}
-                                    {instructors.length > 0 && (
-                                        <tr className="bg-orange-500/10 font-bold text-[8px] text-orange-600 dark:text-orange-400">
-                                            <td colSpan={gridData.activeDates.length + 2} className="px-2 py-1 border border-border">講師</td>
-                                        </tr>
-                                    )}
-                                    {instructors.map(ins => (
-                                        <tr key={ins.id} className="hover:bg-orange-500/10 transition-colors bg-orange-500/5">
-                                            <td className="sticky left-0 z-10 bg-background p-2 border border-border font-bold truncate max-w-[100px] border-r-border shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] text-foreground">
-                                                {ins.name}
-                                            </td>
-                                            {gridData.activeDates.map(dateStr => {
-                                                const record = gridData.attendance[ins.id]?.[dateStr]
-                                                const status = record?.status
-                                                return (
-                                                    <td
-                                                        key={dateStr}
-                                                        className="p-1 border border-border text-center cursor-pointer hover:bg-orange-500/10"
-                                                        onClick={() => setEditTarget({
-                                                            id: ins.id,
-                                                            name: ins.name,
-                                                            date: dateStr,
-                                                            status: record?.status || null,
-                                                            isInstructor: true
-                                                        })}
-                                                    >
-                                                        {status === 'present' ? <span className="text-orange-600 font-bold text-sm">●</span> :
-                                                            status === 'late' ? <span className="text-yellow-600 font-bold text-sm">▲</span> :
-                                                                status === 'absent' ? <span className="text-muted-foreground/30">・</span> : null}
-                                                    </td>
-                                                )
-                                            })}
-                                            <td className="p-1 border border-border text-center font-bold bg-muted/30 text-foreground">{gridData.totals[ins.id] || 0}</td>
-                                        </tr>
-                                    ))}
-
-                                    {/* Location Row */}
-                                    <tr className="bg-muted/50 text-foreground">
-                                        <td className="sticky left-0 z-10 bg-muted p-2 border border-border font-bold text-[8px] text-muted-foreground">実施場所</td>
-                                        {gridData.activeDates.map(dateStr => (
-                                            <td key={dateStr} className="p-1 border border-border text-center text-[8px] leading-tight text-muted-foreground">{gridData.locations[dateStr] || "-"}</td>
-                                        ))}
-                                        <td className="border border-border"></td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                    {loading ? (
+                        <Skeleton className="h-20 w-full rounded-xl" />
+                    ) : instructors.length === 0 ? (
+                        <div className="text-center py-6 bg-gray-50 border border-dashed rounded-xl">
+                            <p className="text-gray-400 text-xs mb-2">講師が登録されていません</p>
+                            <p className="text-[10px] text-muted-foreground italic">設定ページから登録してください</p>
                         </div>
-
-                        {/* Finalization Action */}
-                        {!isFinalized && gridData.activeDates.length > 0 && (
-                            <div className="px-4 pb-6">
-                                <Button
-                                    className="w-full h-12 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black flex items-center justify-center gap-2 shadow-lg shadow-amber-900/10"
-                                    onClick={handleFinalize}
-                                    disabled={finalizing || loading}
+                    ) : (
+                        instructors.map(ins => {
+                            const status = dailyInstructorStatus[ins.id] || 'absent'
+                            return (
+                                <div
+                                    key={ins.id}
+                                    className={cn(
+                                        "flex items-center justify-between p-4 rounded-xl border transition-all",
+                                        !isFinalized && "cursor-pointer",
+                                        status === 'present' ? 'bg-orange-500/10 border-orange-500/50' :
+                                            status === 'late' ? 'bg-yellow-500/10 border-yellow-500/50' :
+                                                'bg-background border-border grayscale-[0.8]'
+                                    )}
+                                    onClick={() => toggleDailyI(ins.id)}
                                 >
-                                    {finalizing ? "確定中..." : (
-                                        <>
-                                            <CheckCircle2 className="h-4 w-4" />
-                                            {selectedMonth.split('-')[1]}月分の出欠を確定する
-                                        </>
-                                    )}
-                                </Button>
-                                <p className="text-[10px] text-center text-muted-foreground mt-2 italic">
-                                    ※ 出欠を確定すると、月謝ページで金額が表示されます。
-                                </p>
-                            </div>
-                        )}
-                        {isFinalized && (
-                            <div className="px-4 pb-6">
-                                <div className="w-full py-4 rounded-xl bg-emerald-50 border border-emerald-100 flex flex-col items-center justify-center gap-1">
-                                    <div className="flex items-center gap-2 text-emerald-600 font-black text-sm">
-                                        <CheckCircle2 className="h-4 w-4" />
-                                        出欠確定済み
+                                    <div className="min-w-0">
+                                        <p className="text-[10px] text-muted-foreground truncate leading-tight">{ins.furigana}</p>
+                                        <h3 className="font-bold text-foreground">{ins.name}</h3>
                                     </div>
-                                    <p className="text-[10px] text-emerald-600/70 font-bold uppercase tracking-widest">
-                                        月謝回収の準備ができています
-                                    </p>
+                                    <div className={`h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all ${status === 'present' ? 'bg-orange-600 border-orange-600' :
+                                        status === 'late' ? 'bg-yellow-600 border-yellow-600' :
+                                            'bg-background border-border'
+                                        }`}>
+                                        {status === 'present' ? <CheckCircle2 className="h-5 w-5 text-white" /> :
+                                            status === 'late' ? <span className="text-white font-bold text-sm">▲</span> : null}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
-                    </div>
-                )}
-            </main>
+                            )
+                        })
+                    )}
+                </div>
+        </div>
+    ) : (
+        <div className="h-full flex flex-col pt-4 overflow-hidden">
+            <div className="flex-1 overflow-auto border border-border rounded-xl mx-4 mb-4 bg-background shadow-sm">
+                <table className="w-full border-collapse text-[10px]">
+                    <thead className="sticky top-0 z-20 bg-muted shadow-sm">
+                        <tr>
+                            <th className="sticky left-0 z-30 bg-muted p-2 border border-border text-left font-bold min-w-[80px] text-foreground">氏名</th>
+                            {gridData.activeDates.map(dateStr => (
+                                <th key={dateStr} className="p-1 border border-border text-center font-medium min-w-[40px] text-foreground">
+                                    {new Date(dateStr).getDate()}日
+                                </th>
+                            ))}
+                            <th className="p-2 border border-border text-center font-bold bg-primary/20 text-primary min-w-[50px]">合計</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {/* Student Header Rows */}
+                        <tr className="bg-blue-500/10 font-bold text-[8px] text-blue-600 dark:text-blue-400">
+                            <td colSpan={gridData.activeDates.length + 2} className="px-2 py-1 border border-border">生徒</td>
+                        </tr>
+                        {students.map(student => (
+                            <tr key={student.id} className="hover:bg-muted/50 transition-colors">
+                                <td className="sticky left-0 z-10 bg-background p-2 border border-border font-bold truncate max-w-[100px] border-r-border shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] text-foreground">
+                                    {student.name}
+                                </td>
+                                {gridData.activeDates.map(dateStr => {
+                                    const record = gridData.attendance[student.id]?.[dateStr]
+                                    const status = record?.status
+                                    return (
+                                        key = { dateStr }
+                                                        className = {
+                                        cn(
+                                                            "p-1 border border-border text-center",
+                                                            !isFinalized && "cursor-pointer hover:bg-green-500/10"
+                                                        )}
+                                onClick={() => !isFinalized && setEditTarget({
+                                    id: student.id,
+                                    name: student.name,
+                                    date: dateStr,
+                                    status: record?.status || null,
+                                    isInstructor: false
+                                })}
+                                                    >
+                                {status === 'present' ? <span className="text-green-600 font-bold text-sm">●</span> : status === 'absent' ? <span className="text-muted-foreground/30">・</span> : null}
+                            </td>
+                        )
+                                            })}
+                        <td className="p-1 border border-border text-center font-bold bg-muted/30 text-foreground">{gridData.totals[student.id] || 0}</td>
+                    </tr>
+                                    ))}
 
-            {/* Bottom Save Button (only for daily) */}
-            {viewMode === 'daily' && (
-                <div className="fixed bottom-20 inset-x-0 p-4 max-w-md mx-auto z-40">
-                    <Button
-                        className="w-full h-14 rounded-full shadow-2xl bg-primary hover:bg-primary/90 text-lg font-bold flex items-center justify-center gap-2"
-                        onClick={handleSaveDaily}
-                        disabled={saving || loading}
-                    >
-                        {saving ? "保存中..." : (
+                    {/* Instructor Header Rows */}
+                    {instructors.length > 0 && (
+                        <tr className="bg-orange-500/10 font-bold text-[8px] text-orange-600 dark:text-orange-400">
+                            <td colSpan={gridData.activeDates.length + 2} className="px-2 py-1 border border-border">講師</td>
+                        </tr>
+                    )}
+                    {instructors.map(ins => (
+                        <tr key={ins.id} className="hover:bg-orange-500/10 transition-colors bg-orange-500/5">
+                            <td className="sticky left-0 z-10 bg-background p-2 border border-border font-bold truncate max-w-[100px] border-r-border shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] text-foreground">
+                                {ins.name}
+                            </td>
+                            {gridData.activeDates.map(dateStr => {
+                                const record = gridData.attendance[ins.id]?.[dateStr]
+                                const status = record?.status
+                                return (
+                                    <td
+                                        key={dateStr}
+                                        className={cn(
+                                            "p-1 border border-border text-center",
+                                            !isFinalized && "cursor-pointer hover:bg-orange-500/10"
+                                        )}
+                                        onClick={() => !isFinalized && setEditTarget({
+                                            id: ins.id,
+                                            name: ins.name,
+                                            date: dateStr,
+                                            status: record?.status || null,
+                                            isInstructor: true
+                                        })}
+                                    >
+                                        {status === 'present' ? <span className="text-orange-600 font-bold text-sm">●</span> :
+                                            status === 'late' ? <span className="text-yellow-600 font-bold text-sm">▲</span> :
+                                                status === 'absent' ? <span className="text-muted-foreground/30">・</span> : null}
+                                    </td>
+                                )
+                            })}
+                            <td className="p-1 border border-border text-center font-bold bg-muted/30 text-foreground">{gridData.totals[ins.id] || 0}</td>
+                        </tr>
+                    ))}
+
+                    {/* Location Row */}
+                    <tr className="bg-muted/50 text-foreground">
+                        <td className="sticky left-0 z-10 bg-muted p-2 border border-border font-bold text-[8px] text-muted-foreground">実施場所</td>
+                        {gridData.activeDates.map(dateStr => (
+                            <td key={dateStr} className="p-1 border border-border text-center text-[8px] leading-tight text-muted-foreground">{gridData.locations[dateStr] || "-"}</td>
+                        ))}
+                        <td className="border border-border"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+                        {/* Finalization Action */ }
+    {
+        !isFinalized && gridData.activeDates.length > 0 && (
+            <div className="px-4 pb-6">
+                <Button
+                    className="w-full h-12 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black flex items-center justify-center gap-2 shadow-lg shadow-amber-900/10"
+                    onClick={handleFinalize}
+                    disabled={finalizing || loading}
+                >
+                    {finalizing ? "確定中..." : (
+                        <>
+                            <CheckCircle2 className="h-4 w-4" />
+                            {selectedMonth.split('-')[1]}月分の出欠を確定する
+                        </>
+                    )}
+                </Button>
+                <p className="text-[10px] text-center text-muted-foreground mt-2 italic">
+                    ※ 出欠を確定すると、月謝ページで金額が表示されます。
+                </p>
+            </div>
+        )
+    }
+    {
+        isFinalized && (
+            <div className="px-4 pb-6">
+                <div className="w-full py-4 rounded-xl bg-emerald-50 border border-emerald-100 flex flex-col items-center justify-center gap-1">
+                    <div className="flex items-center gap-2 text-emerald-600 font-black text-sm">
+                        <CheckCircle2 className="h-4 w-4" />
+                        出欠確定済み
+                    </div>
+                    <p className="text-[10px] text-emerald-600/70 font-bold uppercase tracking-widest">
+                        月謝回収の準備ができています
+                    </p>
+                </div>
+            </div>
+        )
+    }
+                    </div >
+                )
+}
+            </main >
+
+    {/* Bottom Save Button (only for daily) */ }
+{
+    viewMode === 'daily' && (
+        <div className="fixed bottom-20 inset-x-0 p-4 max-w-md mx-auto z-40">
+            <Button
+                className="w-full h-14 rounded-full shadow-2xl bg-primary hover:bg-primary/90 text-lg font-bold flex items-center justify-center gap-2"
+                onClick={handleSaveDaily}
+                disabled={saving || loading}
+            >
+                {saving ? "保存中..." : (
+                    <>
+                        {isFinalized ? (
+                            <>
+                                <CheckCircle2 className="h-5 w-5" />
+                                確定済み (編集不可)
+                            </>
+                        ) : (
                             <>
                                 <Save className="h-5 w-5" />
                                 出欠を保存する
                             </>
                         )}
-                    </Button>
-                </div>
-            )}
-
-            {/* Attendance Edit Drawer */}
-            <Drawer open={!!editTarget} onOpenChange={(open) => !open && setEditTarget(null)}>
-                <DrawerContent>
-                    <div className="mx-auto w-full max-w-sm p-6">
-                        <DrawerHeader className="px-0">
-                            <DrawerTitle className="text-center">
-                                {editTarget?.name}
-                                <div className="text-sm font-normal text-muted-foreground mt-1">
-                                    {editTarget?.date.replace(/-/g, '/')} の出欠
-                                </div>
-                            </DrawerTitle>
-                        </DrawerHeader>
-                        <div className="grid grid-cols-2 gap-3 mt-4">
-                            <Button
-                                variant={editTarget?.status === 'present' ? 'default' : 'outline'}
-                                className={`h-16 text-lg font-bold flex flex-col items-center justify-center gap-1 ${editTarget?.status === 'present' ? 'bg-green-600 hover:bg-green-700' : ''}`}
-                                onClick={() => handleUpdateStatus('present')}
-                            >
-                                <span className="text-xl">●</span>
-                                出席
-                            </Button>
-                            <Button
-                                variant={editTarget?.status === 'absent' ? 'default' : 'outline'}
-                                className="h-16 text-lg font-bold flex flex-col items-center justify-center gap-1"
-                                onClick={() => handleUpdateStatus('absent')}
-                            >
-                                <span className="text-xl">・</span>
-                                欠席
-                            </Button>
-                            {editTarget?.isInstructor && (
-                                <Button
-                                    variant={editTarget?.status === 'late' ? 'default' : 'outline'}
-                                    className={`h-16 text-lg font-bold flex flex-col items-center justify-center gap-1 col-span-2 ${editTarget?.status === 'late' ? 'bg-yellow-600 hover:bg-yellow-700' : ''}`}
-                                    onClick={() => handleUpdateStatus('late')}
-                                >
-                                    <span className="text-xl">▲</span>
-                                    遅刻
-                                </Button>
-                            )}
-                            <Button
-                                variant="ghost"
-                                className="h-12 text-muted-foreground col-span-2 mt-2"
-                                onClick={() => handleUpdateStatus('none')}
-                            >
-                                <X className="h-4 w-4 mr-2" />
-                                記録を消去
-                            </Button>
-                        </div>
-                        <DrawerFooter className="px-0 mt-6 pb-8">
-                            <DrawerClose asChild>
-                                <Button variant="outline" className="w-full h-12">キャンセル</Button>
-                            </DrawerClose>
-                        </DrawerFooter>
-                    </div>
-                </DrawerContent>
-            </Drawer>
+                    </>
+                )}
+            </Button>
         </div>
+    )
+}
+
+{/* Attendance Edit Drawer */ }
+<Drawer open={!!editTarget} onOpenChange={(open) => !open && setEditTarget(null)}>
+    <DrawerContent>
+        <div className="mx-auto w-full max-w-sm p-6">
+            <DrawerHeader className="px-0">
+                <DrawerTitle className="text-center">
+                    {editTarget?.name}
+                    <div className="text-sm font-normal text-muted-foreground mt-1">
+                        {editTarget?.date.replace(/-/g, '/')} の出欠
+                    </div>
+                </DrawerTitle>
+            </DrawerHeader>
+            <div className="grid grid-cols-2 gap-3 mt-4">
+                <Button
+                    variant={editTarget?.status === 'present' ? 'default' : 'outline'}
+                    className={`h-16 text-lg font-bold flex flex-col items-center justify-center gap-1 ${editTarget?.status === 'present' ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                    onClick={() => handleUpdateStatus('present')}
+                >
+                    <span className="text-xl">●</span>
+                    出席
+                </Button>
+                <Button
+                    variant={editTarget?.status === 'absent' ? 'default' : 'outline'}
+                    className="h-16 text-lg font-bold flex flex-col items-center justify-center gap-1"
+                    onClick={() => handleUpdateStatus('absent')}
+                >
+                    <span className="text-xl">・</span>
+                    欠席
+                </Button>
+                {editTarget?.isInstructor && (
+                    <Button
+                        variant={editTarget?.status === 'late' ? 'default' : 'outline'}
+                        className={`h-16 text-lg font-bold flex flex-col items-center justify-center gap-1 col-span-2 ${editTarget?.status === 'late' ? 'bg-yellow-600 hover:bg-yellow-700' : ''}`}
+                        onClick={() => handleUpdateStatus('late')}
+                    >
+                        <span className="text-xl">▲</span>
+                        遅刻
+                    </Button>
+                )}
+                <Button
+                    variant="ghost"
+                    className="h-12 text-muted-foreground col-span-2 mt-2"
+                    onClick={() => handleUpdateStatus('none')}
+                >
+                    <X className="h-4 w-4 mr-2" />
+                    記録を消去
+                </Button>
+            </div>
+            <DrawerFooter className="px-0 mt-6 pb-8">
+                <DrawerClose asChild>
+                    <Button variant="outline" className="w-full h-12">キャンセル</Button>
+                </DrawerClose>
+            </DrawerFooter>
+        </div>
+    </DrawerContent>
+</Drawer>
+        </div >
     )
 }
