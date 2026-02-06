@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Users, CalendarCheck, Wallet, Settings } from 'lucide-react'
+import { Users, CalendarCheck, Wallet, Settings, Ticket } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 import { useNavigation } from './NavigationProvider'
@@ -12,6 +12,7 @@ const ALL_NAV_ITEMS = [
     { label: '名簿', icon: Users, href: '/students' },
     { label: '出欠', icon: CalendarCheck, href: '/attendance' },
     { label: '月謝', icon: Wallet, href: '/tuition' },
+    { label: 'イベント', icon: Ticket, href: '/events' },
     { label: '会計', icon: Wallet, href: '/accounting' },
     { label: '設定', icon: Settings, href: '/settings' },
 ]

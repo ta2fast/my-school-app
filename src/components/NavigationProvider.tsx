@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
-const DEFAULT_ORDER = ['/attendance', '/students', '/tuition', '/accounting', '/settings'];
+const DEFAULT_ORDER = ['/attendance', '/students', '/tuition', '/events', '/accounting', '/settings'];
 
 const NavigationContext = createContext({
     direction: 0,
