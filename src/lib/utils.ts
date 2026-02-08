@@ -48,3 +48,14 @@ export function getJapaneseGrade(birthDate?: string): string {
 
   return '卒業生';
 }
+
+/**
+ * 西暦を和暦に変換する (簡易版: 年単位)
+ */
+export function getJapaneseEra(year: number): string {
+  if (year >= 2019) return `令和${year - 2019 + 1}年`;
+  if (year >= 1989) return `平成${year - 1989 + 1}年`;
+  if (year >= 1926) return `昭和${year - 1926 + 1}年`;
+  if (year >= 1912) return `大正${year - 1912 + 1}年`;
+  return '';
+}

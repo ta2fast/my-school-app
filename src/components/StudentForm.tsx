@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { cn } from '@/lib/utils'
+import { cn, getJapaneseEra } from '@/lib/utils'
 
 interface StudentFormProps {
     initialData?: {
@@ -168,7 +168,14 @@ export function StudentForm({ initialData, onSubmit, onCancel, loading }: Studen
                             className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             <option value="">年</option>
-                            {years.map(y => <option key={y} value={y}>{y}年</option>)}
+                            {years.map(y => {
+                                const era = getJapaneseEra(Number(y));
+                                return (
+                                    <option key={y} value={y}>
+                                        {y}年 {era ? `(${era})` : ''}
+                                    </option>
+                                )
+                            })}
                         </select>
                     </div>
                     <div className="flex-1">
