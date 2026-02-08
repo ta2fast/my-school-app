@@ -20,6 +20,8 @@ interface Student {
     id: string
     name: string
     furigana: string
+    daily_rate: number
+    has_bike_rental: boolean
 }
 
 interface Instructor {
@@ -53,6 +55,7 @@ function AttendanceContent() {
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [viewMode, setViewMode] = useState<ViewMode>('monthly')
+    const [globalSettings, setGlobalSettings] = useState({ default_daily_rate: 2000, bike_rental_fee: 5000 })
 
     // Dates
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
@@ -89,13 +92,23 @@ function AttendanceContent() {
     const fetchData = useCallback(async () => {
         setLoading(true)
         try {
-            const [sRes, iRes, lRes] = await Promise.all([
-                supabase.from('students').select('id, name, furigana').order('furigana', { ascending: true }),
+            const [sRes, iRes, lRes, setRes] = await Promise.all([
+                supabase.from('students').select('id, name, furigana, daily_rate, has_bike_rental').order('furigana', { ascending: true }),
                 supabase.from('instructors').select('id, name, furigana').order('furigana', { ascending: true }),
-                supabase.from('attendance').select('location').not('location', 'is', null)
+                supabase.from('attendance').select('location').not('location', 'is', null),
+                supabase.from('settings').select('*')
             ])
             setStudents(sRes.data || [])
             setInstructors(iRes.data || [])
+
+            if (setRes.data) {
+                const dr = setRes.data.find(s => s.key === 'default_daily_rate')
+                const bf = setRes.data.find(s => s.key === 'bike_rental_fee')
+                setGlobalSettings({
+                    default_daily_rate: parseInt(dr?.value || '2000'),
+                    bike_rental_fee: parseInt(bf?.value || '5000')
+                })
+            }
 
             // Extract unique locations for history
             const locs = Array.from(new Set(lRes.data?.map(d => d.location).filter(Boolean) as string[]))
@@ -545,11 +558,17 @@ function AttendanceContent() {
                                             </th>
                                         ))}
                                         <th className="p-2 border border-border text-center font-black bg-primary/10 text-primary min-w-[50px]">合計</th>
+                                        {isFinalized && (
+                                            <>
+                                                <th className="p-2 border border-border text-center font-black bg-emerald-500/10 text-emerald-600 min-w-[70px]">月謝</th>
+                                                <th className="p-2 border border-border text-center font-black bg-orange-500/10 text-orange-600 min-w-[50px]">レンタル</th>
+                                            </>
+                                        )}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr className="bg-blue-500/5 font-black text-[8px] text-blue-600 dark:text-blue-400 uppercase tracking-widest leading-loose">
-                                        <td colSpan={gridData.activeDates.length + 2} className="px-3 py-0.5 border border-border">生徒 / Students</td>
+                                        <td colSpan={gridData.activeDates.length + (isFinalized ? 4 : 2)} className="px-3 py-0.5 border border-border">生徒 / Students</td>
                                     </tr>
                                     {students.map(student => (
                                         <tr key={student.id} className="hover:bg-muted/50 transition-colors">
@@ -579,12 +598,30 @@ function AttendanceContent() {
                                                 )
                                             })}
                                             <td className="p-1 border border-border text-center font-black bg-muted/30 text-foreground tabular-nums">{gridData.totals[student.id] || 0}</td>
+                                            {isFinalized && (() => {
+                                                const daysCount = gridData.totals[student.id] || 0
+                                                const effectiveDailyRate = student.daily_rate > 0 ? student.daily_rate : globalSettings.default_daily_rate
+                                                const baseAmount = daysCount * effectiveDailyRate
+                                                const bikeAmount = student.has_bike_rental ? globalSettings.bike_rental_fee : 0
+                                                const totalAmount = baseAmount + bikeAmount
+
+                                                return (
+                                                    <>
+                                                        <td className="p-1 border border-border text-right font-black bg-emerald-500/5 text-emerald-600 tabular-nums">
+                                                            {new Intl.NumberFormat('ja-JP').format(totalAmount)}
+                                                        </td>
+                                                        <td className="p-1 border border-border text-center font-bold bg-orange-500/5 text-orange-600">
+                                                            {student.has_bike_rental ? "有" : "-"}
+                                                        </td>
+                                                    </>
+                                                )
+                                            })()}
                                         </tr>
                                     ))}
 
                                     {instructors.length > 0 && (
                                         <tr className="bg-orange-500/5 font-black text-[8px] text-orange-600 dark:text-orange-400 uppercase tracking-widest leading-loose">
-                                            <td colSpan={gridData.activeDates.length + 2} className="px-3 py-0.5 border border-border">講師 / Instructors</td>
+                                            <td colSpan={gridData.activeDates.length + (isFinalized ? 4 : 2)} className="px-3 py-0.5 border border-border">講師 / Instructors</td>
                                         </tr>
                                     )}
                                     {instructors.map(ins => (
@@ -617,6 +654,12 @@ function AttendanceContent() {
                                                 )
                                             })}
                                             <td className="p-1 border border-border text-center font-black bg-muted/30 text-foreground tabular-nums">{gridData.totals[ins.id] || 0}</td>
+                                            {isFinalized && (
+                                                <>
+                                                    <td className="p-1 border border-border bg-emerald-500/5"></td>
+                                                    <td className="p-1 border border-border bg-orange-500/5"></td>
+                                                </>
+                                            )}
                                         </tr>
                                     ))}
 
@@ -626,6 +669,12 @@ function AttendanceContent() {
                                             <td key={dateStr} className="p-1 border border-border text-center truncate italic max-w-[40px] px-0.5">{gridData.locations[dateStr] || "-"}</td>
                                         ))}
                                         <td className="border border-border"></td>
+                                        {isFinalized && (
+                                            <>
+                                                <td className="border border-border bg-emerald-500/5"></td>
+                                                <td className="border border-border bg-orange-500/5"></td>
+                                            </>
+                                        )}
                                     </tr>
                                 </tbody>
                             </table>
