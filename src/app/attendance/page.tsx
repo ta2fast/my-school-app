@@ -605,9 +605,15 @@ function AttendanceContent() {
                                     <tr className="bg-blue-500/5 font-black text-[8px] text-blue-600 dark:text-blue-400 uppercase tracking-widest leading-loose">
                                         <td colSpan={gridData.activeDates.length + (isFinalized ? 3 : 2)} className="px-3 py-0.5 border border-border">生徒 / Students</td>
                                     </tr>
-                                    {students.map(student => (
-                                        <tr key={student.id} className="hover:bg-muted/50 transition-colors">
-                                            <td className="sticky left-0 z-10 bg-background px-1.5 py-2 border border-border font-black truncate max-w-[80px] border-r-border shadow-[2px_0_10px_-4px_rgba(0,0,0,0.1)] text-foreground">
+                                    {students.map((student, idx) => (
+                                        <tr key={student.id} className={cn(
+                                            "hover:bg-muted/50 transition-colors",
+                                            idx % 2 !== 0 ? "bg-muted/20" : "bg-background"
+                                        )}>
+                                            <td className={cn(
+                                                "sticky left-0 z-10 px-1.5 py-2 border border-border font-black truncate max-w-[80px] border-r-border shadow-[2px_0_10px_-4px_rgba(0,0,0,0.1)] text-foreground",
+                                                idx % 2 !== 0 ? "bg-muted/40 backdrop-blur-sm" : "bg-background"
+                                            )}>
                                                 <div className="flex items-center gap-1">
                                                     {student.name}
                                                     {student.has_bike_rental && <Bike className="h-2.5 w-2.5 text-orange-500 shrink-0" />}
@@ -657,9 +663,15 @@ function AttendanceContent() {
                                             <td colSpan={gridData.activeDates.length + (isFinalized ? 3 : 2)} className="px-3 py-0.5 border border-border">講師 / Instructors</td>
                                         </tr>
                                     )}
-                                    {instructors.map(ins => (
-                                        <tr key={ins.id} className="hover:bg-orange-500/5 transition-colors">
-                                            <td className="sticky left-0 z-10 bg-background px-1.5 py-2 border border-border font-black truncate max-w-[80px] border-r-border shadow-[2px_0_10px_-4px_rgba(0,0,0,0.1)] text-foreground">
+                                    {instructors.map((ins, idx) => (
+                                        <tr key={ins.id} className={cn(
+                                            "hover:bg-orange-500/5 transition-colors",
+                                            idx % 2 !== 0 ? "bg-orange-500/5" : "bg-background"
+                                        )}>
+                                            <td className={cn(
+                                                "sticky left-0 z-10 px-1.5 py-2 border border-border font-black truncate max-w-[80px] border-r-border shadow-[2px_0_10px_-4px_rgba(0,0,0,0.1)] text-foreground",
+                                                idx % 2 !== 0 ? "bg-orange-50/50 backdrop-blur-sm" : "bg-background"
+                                            )}>
                                                 {ins.name}
                                             </td>
                                             <td className="px-1 py-1.5 border border-border text-center font-black bg-muted/20 text-foreground tabular-nums">{gridData.totals[ins.id] || 0}</td>
