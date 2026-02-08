@@ -76,6 +76,8 @@ function AttendanceContent() {
         status: string | null;
         isInstructor: boolean;
     } | null>(null)
+    const [editingDate, setEditingDate] = useState<string | null>(null)
+    const [newDateValue, setNewDateValue] = useState('')
     const [isFinalized, setIsFinalized] = useState(false)
     const [finalizing, setFinalizing] = useState(false)
     const searchParams = useSearchParams()
@@ -301,6 +303,30 @@ function AttendanceContent() {
         } catch (error) {
             console.error('Error updating status:', error)
             alert('更新に失敗しました。')
+        }
+    }
+
+    const handleUpdateDate = async () => {
+        if (!editingDate || !newDateValue || isFinalized) return
+        if (editingDate === newDateValue) {
+            setEditingDate(null)
+            return
+        }
+
+        try {
+            const { error } = await supabase
+                .from('attendance')
+                .update({ date: newDateValue })
+                .eq('date', editingDate)
+
+            if (error) throw error
+
+            alert('日付を更新しました。')
+            fetchMonthlyData()
+            setEditingDate(null)
+        } catch (error) {
+            console.error('Error updating date:', error)
+            alert('日付の更新に失敗しました。')
         }
     }
 
@@ -557,8 +583,20 @@ function AttendanceContent() {
                                             <th className="px-1 py-1.5 border border-border text-center font-black bg-emerald-500/5 text-emerald-600 min-w-[60px]">月謝</th>
                                         )}
                                         {gridData.activeDates.map(dateStr => (
-                                            <th key={dateStr} className="px-0.5 py-1.5 border border-border text-center font-bold min-w-[24px] text-foreground">
-                                                {new Date(dateStr).getDate()}
+                                            <th
+                                                key={dateStr}
+                                                className={cn(
+                                                    "px-0.5 py-1.5 border border-border text-center font-bold min-w-[24px] text-foreground transition-colors",
+                                                    !isFinalized && "cursor-pointer hover:bg-primary/20 hover:text-primary active:scale-95"
+                                                )}
+                                                onClick={() => {
+                                                    if (!isFinalized) {
+                                                        setEditingDate(dateStr)
+                                                        setNewDateValue(dateStr)
+                                                    }
+                                                }}
+                                            >
+                                                {parseInt(dateStr.split('-')[2] || "0")}
                                             </th>
                                         ))}
                                     </tr>
@@ -808,6 +846,50 @@ function AttendanceContent() {
                                 <Button variant="outline" className="w-full h-14 rounded-2xl font-black uppercase tracking-widest">Cancel</Button>
                             </DrawerClose>
                         </DrawerFooter>
+                    </div>
+                </DrawerContent>
+            </Drawer>
+            {/* Date Edit Drawer */}
+            <Drawer open={!!editingDate} onOpenChange={(open) => !open && setEditingDate(null)}>
+                <DrawerContent>
+                    <div className="mx-auto w-full max-w-sm p-6">
+                        <DrawerHeader className="px-0">
+                            <DrawerTitle className="text-center">
+                                <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Date Correction</div>
+                                <div className="text-2xl font-black italic tracking-tighter uppercase">日付の修正</div>
+                                <p className="text-xs font-bold text-muted-foreground mt-2">
+                                    対象日: {editingDate?.replace(/-/g, '/')}
+                                </p>
+                            </DrawerTitle>
+                        </DrawerHeader>
+                        <div className="space-y-6 mt-4">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">新しい日付</label>
+                                <input
+                                    type="date"
+                                    className="w-full bg-muted/50 border border-border/50 rounded-2xl h-14 px-4 font-black text-lg focus:ring-4 focus:ring-primary/10 outline-none"
+                                    value={newDateValue}
+                                    onChange={(e) => setNewDateValue(e.target.value)}
+                                />
+                            </div>
+                            <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20">
+                                <p className="text-[10px] font-bold text-amber-600 leading-relaxed italic">
+                                    ※ この操作により、{editingDate?.replace(/-/g, '/')} の全ての出欠記録（生徒・講師）が新しい日付に移動します。
+                                </p>
+                            </div>
+                            <div className="space-y-3 pb-8">
+                                <Button
+                                    className="w-full h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg shadow-xl shadow-indigo-900/20 active:scale-95 transition-all"
+                                    onClick={handleUpdateDate}
+                                >
+                                    <Save className="h-5 w-5 mr-2" />
+                                    日付を更新する
+                                </Button>
+                                <DrawerClose asChild>
+                                    <Button variant="ghost" className="w-full h-12 rounded-xl text-muted-foreground font-bold italic">CANCEL</Button>
+                                </DrawerClose>
+                            </div>
+                        </div>
                     </div>
                 </DrawerContent>
             </Drawer>
