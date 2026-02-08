@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ChevronLeft, ChevronRight, Save, Calendar as CalendarIcon, Table as TableIcon, CheckCircle2, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Save, Calendar as CalendarIcon, Table as TableIcon, CheckCircle2, X, Bike } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
     Drawer,
@@ -554,10 +554,7 @@ function AttendanceContent() {
                                         <th className="sticky left-0 z-30 bg-muted px-1.5 py-2 border border-border text-left font-black min-w-[70px] text-foreground uppercase tracking-wider">氏名</th>
                                         <th className="px-1 py-1.5 border border-border text-center font-black bg-primary/5 text-primary min-w-[32px]">計</th>
                                         {isFinalized && (
-                                            <>
-                                                <th className="px-1 py-1.5 border border-border text-center font-black bg-emerald-500/5 text-emerald-600 min-w-[60px]">月謝</th>
-                                                <th className="px-1 py-1.5 border border-border text-center font-black bg-orange-500/5 text-orange-600 min-w-[32px]">レン</th>
-                                            </>
+                                            <th className="px-1 py-1.5 border border-border text-center font-black bg-emerald-500/5 text-emerald-600 min-w-[60px]">月謝</th>
                                         )}
                                         {gridData.activeDates.map(dateStr => (
                                             <th key={dateStr} className="px-0.5 py-1.5 border border-border text-center font-bold min-w-[24px] text-foreground">
@@ -568,12 +565,15 @@ function AttendanceContent() {
                                 </thead>
                                 <tbody>
                                     <tr className="bg-blue-500/5 font-black text-[8px] text-blue-600 dark:text-blue-400 uppercase tracking-widest leading-loose">
-                                        <td colSpan={gridData.activeDates.length + (isFinalized ? 4 : 2)} className="px-3 py-0.5 border border-border">生徒 / Students</td>
+                                        <td colSpan={gridData.activeDates.length + (isFinalized ? 3 : 2)} className="px-3 py-0.5 border border-border">生徒 / Students</td>
                                     </tr>
                                     {students.map(student => (
                                         <tr key={student.id} className="hover:bg-muted/50 transition-colors">
                                             <td className="sticky left-0 z-10 bg-background px-1.5 py-2 border border-border font-black truncate max-w-[80px] border-r-border shadow-[2px_0_10px_-4px_rgba(0,0,0,0.1)] text-foreground">
-                                                {student.name}
+                                                <div className="flex items-center gap-1">
+                                                    {student.name}
+                                                    {student.has_bike_rental && <Bike className="h-2.5 w-2.5 text-orange-500 shrink-0" />}
+                                                </div>
                                             </td>
                                             <td className="px-1 py-1.5 border border-border text-center font-black bg-muted/20 text-foreground tabular-nums">{gridData.totals[student.id] || 0}</td>
                                             {isFinalized && (() => {
@@ -584,14 +584,9 @@ function AttendanceContent() {
                                                 const totalAmount = baseAmount + bikeAmount
 
                                                 return (
-                                                    <>
-                                                        <td className="px-1 py-1.5 border border-border text-right font-black bg-emerald-500/5 text-emerald-600 tabular-nums text-[9px]">
-                                                            {new Intl.NumberFormat('ja-JP').format(totalAmount)}
-                                                        </td>
-                                                        <td className="px-1 py-1.5 border border-border text-center font-bold bg-orange-500/5 text-orange-600">
-                                                            {student.has_bike_rental ? "有" : "-"}
-                                                        </td>
-                                                    </>
+                                                    <td className="px-1 py-1.5 border border-border text-right font-black bg-emerald-500/5 text-emerald-600 tabular-nums text-[9px]">
+                                                        {new Intl.NumberFormat('ja-JP').format(totalAmount)}
+                                                    </td>
                                                 )
                                             })()}
                                             {gridData.activeDates.map(dateStr => {
@@ -621,7 +616,7 @@ function AttendanceContent() {
 
                                     {instructors.length > 0 && (
                                         <tr className="bg-orange-500/5 font-black text-[8px] text-orange-600 dark:text-orange-400 uppercase tracking-widest leading-loose">
-                                            <td colSpan={gridData.activeDates.length + (isFinalized ? 4 : 2)} className="px-3 py-0.5 border border-border">講師 / Instructors</td>
+                                            <td colSpan={gridData.activeDates.length + (isFinalized ? 3 : 2)} className="px-3 py-0.5 border border-border">講師 / Instructors</td>
                                         </tr>
                                     )}
                                     {instructors.map(ins => (
@@ -631,10 +626,7 @@ function AttendanceContent() {
                                             </td>
                                             <td className="px-1 py-1.5 border border-border text-center font-black bg-muted/20 text-foreground tabular-nums">{gridData.totals[ins.id] || 0}</td>
                                             {isFinalized && (
-                                                <>
-                                                    <td className="px-1 py-1.5 border border-border bg-emerald-500/5"></td>
-                                                    <td className="px-1 py-1.5 border border-border bg-orange-500/5"></td>
-                                                </>
+                                                <td className="px-1 py-1.5 border border-border bg-emerald-500/5"></td>
                                             )}
                                             {gridData.activeDates.map(dateStr => {
                                                 const record = gridData.attendance[ins.id]?.[dateStr]
@@ -667,10 +659,7 @@ function AttendanceContent() {
                                         <td className="sticky left-0 z-10 bg-muted px-1.5 py-2 border border-border">場所</td>
                                         <td className="border border-border"></td>
                                         {isFinalized && (
-                                            <>
-                                                <td className="border border-border bg-emerald-500/5"></td>
-                                                <td className="border border-border bg-orange-500/5"></td>
-                                            </>
+                                            <td className="border border-border bg-emerald-500/5"></td>
                                         )}
                                         {gridData.activeDates.map(dateStr => (
                                             <td key={dateStr} className="px-0.5 py-1.5 border border-border text-center truncate italic max-w-[24px] overflow-hidden">{gridData.locations[dateStr] || "-"}</td>
