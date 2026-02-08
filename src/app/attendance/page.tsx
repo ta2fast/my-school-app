@@ -551,19 +551,19 @@ function AttendanceContent() {
                             <table className="w-full border-collapse text-[10px]">
                                 <thead className="sticky top-0 z-20 bg-muted/95 backdrop-blur-sm shadow-sm">
                                     <tr>
-                                        <th className="sticky left-0 z-30 bg-muted p-2 border border-border text-left font-black min-w-[80px] text-foreground uppercase tracking-wider">氏名</th>
+                                        <th className="sticky left-0 z-30 bg-muted px-1.5 py-2 border border-border text-left font-black min-w-[70px] text-foreground uppercase tracking-wider">氏名</th>
+                                        <th className="px-1 py-1.5 border border-border text-center font-black bg-primary/5 text-primary min-w-[32px]">計</th>
+                                        {isFinalized && (
+                                            <>
+                                                <th className="px-1 py-1.5 border border-border text-center font-black bg-emerald-500/5 text-emerald-600 min-w-[60px]">月謝</th>
+                                                <th className="px-1 py-1.5 border border-border text-center font-black bg-orange-500/5 text-orange-600 min-w-[32px]">レン</th>
+                                            </>
+                                        )}
                                         {gridData.activeDates.map(dateStr => (
-                                            <th key={dateStr} className="p-1 border border-border text-center font-bold min-w-[40px] text-foreground">
+                                            <th key={dateStr} className="px-0.5 py-1.5 border border-border text-center font-bold min-w-[24px] text-foreground">
                                                 {new Date(dateStr).getDate()}
                                             </th>
                                         ))}
-                                        <th className="p-2 border border-border text-center font-black bg-primary/10 text-primary min-w-[50px]">合計</th>
-                                        {isFinalized && (
-                                            <>
-                                                <th className="p-2 border border-border text-center font-black bg-emerald-500/10 text-emerald-600 min-w-[70px]">月謝</th>
-                                                <th className="p-2 border border-border text-center font-black bg-orange-500/10 text-orange-600 min-w-[50px]">レンタル</th>
-                                            </>
-                                        )}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -572,9 +572,28 @@ function AttendanceContent() {
                                     </tr>
                                     {students.map(student => (
                                         <tr key={student.id} className="hover:bg-muted/50 transition-colors">
-                                            <td className="sticky left-0 z-10 bg-background p-2 border border-border font-black truncate max-w-[100px] border-r-border shadow-[2px_0_10px_-4px_rgba(0,0,0,0.1)] text-foreground">
+                                            <td className="sticky left-0 z-10 bg-background px-1.5 py-2 border border-border font-black truncate max-w-[80px] border-r-border shadow-[2px_0_10px_-4px_rgba(0,0,0,0.1)] text-foreground">
                                                 {student.name}
                                             </td>
+                                            <td className="px-1 py-1.5 border border-border text-center font-black bg-muted/20 text-foreground tabular-nums">{gridData.totals[student.id] || 0}</td>
+                                            {isFinalized && (() => {
+                                                const daysCount = gridData.totals[student.id] || 0
+                                                const effectiveDailyRate = student.daily_rate > 0 ? student.daily_rate : globalSettings.default_daily_rate
+                                                const baseAmount = daysCount * effectiveDailyRate
+                                                const bikeAmount = student.has_bike_rental ? globalSettings.bike_rental_fee : 0
+                                                const totalAmount = baseAmount + bikeAmount
+
+                                                return (
+                                                    <>
+                                                        <td className="px-1 py-1.5 border border-border text-right font-black bg-emerald-500/5 text-emerald-600 tabular-nums text-[9px]">
+                                                            {new Intl.NumberFormat('ja-JP').format(totalAmount)}
+                                                        </td>
+                                                        <td className="px-1 py-1.5 border border-border text-center font-bold bg-orange-500/5 text-orange-600">
+                                                            {student.has_bike_rental ? "有" : "-"}
+                                                        </td>
+                                                    </>
+                                                )
+                                            })()}
                                             {gridData.activeDates.map(dateStr => {
                                                 const record = gridData.attendance[student.id]?.[dateStr]
                                                 const status = record?.status
@@ -582,7 +601,7 @@ function AttendanceContent() {
                                                     <td
                                                         key={dateStr}
                                                         className={cn(
-                                                            "p-1 border border-border text-center transition-colors",
+                                                            "px-0.5 py-1.5 border border-border text-center transition-colors",
                                                             !isFinalized && "cursor-pointer hover:bg-emerald-500/20"
                                                         )}
                                                         onClick={() => !isFinalized && setEditTarget({
@@ -597,25 +616,6 @@ function AttendanceContent() {
                                                     </td>
                                                 )
                                             })}
-                                            <td className="p-1 border border-border text-center font-black bg-muted/30 text-foreground tabular-nums">{gridData.totals[student.id] || 0}</td>
-                                            {isFinalized && (() => {
-                                                const daysCount = gridData.totals[student.id] || 0
-                                                const effectiveDailyRate = student.daily_rate > 0 ? student.daily_rate : globalSettings.default_daily_rate
-                                                const baseAmount = daysCount * effectiveDailyRate
-                                                const bikeAmount = student.has_bike_rental ? globalSettings.bike_rental_fee : 0
-                                                const totalAmount = baseAmount + bikeAmount
-
-                                                return (
-                                                    <>
-                                                        <td className="p-1 border border-border text-right font-black bg-emerald-500/5 text-emerald-600 tabular-nums">
-                                                            {new Intl.NumberFormat('ja-JP').format(totalAmount)}
-                                                        </td>
-                                                        <td className="p-1 border border-border text-center font-bold bg-orange-500/5 text-orange-600">
-                                                            {student.has_bike_rental ? "有" : "-"}
-                                                        </td>
-                                                    </>
-                                                )
-                                            })()}
                                         </tr>
                                     ))}
 
@@ -626,9 +626,16 @@ function AttendanceContent() {
                                     )}
                                     {instructors.map(ins => (
                                         <tr key={ins.id} className="hover:bg-orange-500/5 transition-colors">
-                                            <td className="sticky left-0 z-10 bg-background p-2 border border-border font-black truncate max-w-[100px] border-r-border shadow-[2px_0_10px_-4px_rgba(0,0,0,0.1)] text-foreground">
+                                            <td className="sticky left-0 z-10 bg-background px-1.5 py-2 border border-border font-black truncate max-w-[80px] border-r-border shadow-[2px_0_10px_-4px_rgba(0,0,0,0.1)] text-foreground">
                                                 {ins.name}
                                             </td>
+                                            <td className="px-1 py-1.5 border border-border text-center font-black bg-muted/20 text-foreground tabular-nums">{gridData.totals[ins.id] || 0}</td>
+                                            {isFinalized && (
+                                                <>
+                                                    <td className="px-1 py-1.5 border border-border bg-emerald-500/5"></td>
+                                                    <td className="px-1 py-1.5 border border-border bg-orange-500/5"></td>
+                                                </>
+                                            )}
                                             {gridData.activeDates.map(dateStr => {
                                                 const record = gridData.attendance[ins.id]?.[dateStr]
                                                 const status = record?.status
@@ -636,7 +643,7 @@ function AttendanceContent() {
                                                     <td
                                                         key={dateStr}
                                                         className={cn(
-                                                            "p-1 border border-border text-center transition-colors",
+                                                            "px-0.5 py-1.5 border border-border text-center transition-colors",
                                                             !isFinalized && "cursor-pointer hover:bg-orange-500/20"
                                                         )}
                                                         onClick={() => !isFinalized && setEditTarget({
@@ -653,21 +660,11 @@ function AttendanceContent() {
                                                     </td>
                                                 )
                                             })}
-                                            <td className="p-1 border border-border text-center font-black bg-muted/30 text-foreground tabular-nums">{gridData.totals[ins.id] || 0}</td>
-                                            {isFinalized && (
-                                                <>
-                                                    <td className="p-1 border border-border bg-emerald-500/5"></td>
-                                                    <td className="p-1 border border-border bg-orange-500/5"></td>
-                                                </>
-                                            )}
                                         </tr>
                                     ))}
 
                                     <tr className="bg-muted text-[8px] font-black text-muted-foreground uppercase tracking-widest">
-                                        <td className="sticky left-0 z-10 bg-muted p-2 border border-border">実施場所</td>
-                                        {gridData.activeDates.map(dateStr => (
-                                            <td key={dateStr} className="p-1 border border-border text-center truncate italic max-w-[40px] px-0.5">{gridData.locations[dateStr] || "-"}</td>
-                                        ))}
+                                        <td className="sticky left-0 z-10 bg-muted px-1.5 py-2 border border-border">場所</td>
                                         <td className="border border-border"></td>
                                         {isFinalized && (
                                             <>
@@ -675,6 +672,9 @@ function AttendanceContent() {
                                                 <td className="border border-border bg-orange-500/5"></td>
                                             </>
                                         )}
+                                        {gridData.activeDates.map(dateStr => (
+                                            <td key={dateStr} className="px-0.5 py-1.5 border border-border text-center truncate italic max-w-[24px] overflow-hidden">{gridData.locations[dateStr] || "-"}</td>
+                                        ))}
                                     </tr>
                                 </tbody>
                             </table>
