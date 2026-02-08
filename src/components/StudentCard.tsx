@@ -3,8 +3,9 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { cn } from '@/lib/utils'
-import { Trash2, Edit } from 'lucide-react'
+import { Trash2, Edit, GraduationCap } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { getJapaneseGrade } from '@/lib/utils'
 
 interface StudentCardProps {
     student: {
@@ -19,6 +20,7 @@ interface StudentCardProps {
         emergency_relationship?: string;
         daily_rate?: number;
         has_bike_rental?: boolean;
+        grade?: string;
     }
     onEdit?: (student: any) => void
 }
@@ -39,6 +41,7 @@ export function StudentCard({ student, onEdit }: StudentCardProps) {
     };
 
     const age = calculateAge(student.birth_date);
+    const grade = getJapaneseGrade(student.birth_date);
 
     const handleDelete = async () => {
         if (!confirm(`${student.name} さんの情報を削除してもよろしいですか？`)) return
@@ -71,6 +74,12 @@ export function StudentCard({ student, onEdit }: StudentCardProps) {
                             <p className="text-[10px] text-muted-foreground">{student.furigana}</p>
                             <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                                 {student.name}
+                                {student.birth_date && (
+                                    <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                                        <GraduationCap className="h-3 w-3" />
+                                        {grade}
+                                    </span>
+                                )}
                                 {student.has_bike_rental && (
                                     <span className="bg-orange-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
                                         RENTAL
