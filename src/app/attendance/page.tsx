@@ -607,12 +607,12 @@ function AttendanceContent() {
                                     </tr>
                                     {students.map((student, idx) => (
                                         <tr key={student.id} className={cn(
-                                            "hover:bg-muted/50 transition-colors",
-                                            idx % 2 !== 0 ? "bg-muted/20" : "bg-background"
+                                            "hover:bg-primary/10 transition-colors border-b border-border/50",
+                                            idx % 2 !== 0 ? "bg-muted/40" : "bg-background"
                                         )}>
                                             <td className={cn(
-                                                "sticky left-0 z-10 px-1.5 py-2 border border-border font-black truncate max-w-[80px] border-r-border shadow-[2px_0_10px_-4px_rgba(0,0,0,0.1)] text-foreground",
-                                                idx % 2 !== 0 ? "bg-muted/40 backdrop-blur-sm" : "bg-background"
+                                                "sticky left-0 z-10 px-1.5 py-2 border border-border font-black truncate max-w-[80px] border-r-border shadow-[2px_0_10px_-4px_rgba(0,0,0,0.1)] text-foreground transition-colors",
+                                                idx % 2 !== 0 ? "bg-muted/60" : "bg-background"
                                             )}>
                                                 <div className="flex items-center gap-1">
                                                     {student.name}
@@ -665,12 +665,12 @@ function AttendanceContent() {
                                     )}
                                     {instructors.map((ins, idx) => (
                                         <tr key={ins.id} className={cn(
-                                            "hover:bg-orange-500/5 transition-colors",
-                                            idx % 2 !== 0 ? "bg-orange-500/5" : "bg-background"
+                                            "hover:bg-orange-500/10 transition-colors border-b border-orange-100/50",
+                                            idx % 2 !== 0 ? "bg-orange-100/30" : "bg-orange-50/20"
                                         )}>
                                             <td className={cn(
-                                                "sticky left-0 z-10 px-1.5 py-2 border border-border font-black truncate max-w-[80px] border-r-border shadow-[2px_0_10px_-4px_rgba(0,0,0,0.1)] text-foreground",
-                                                idx % 2 !== 0 ? "bg-orange-50/50 backdrop-blur-sm" : "bg-background"
+                                                "sticky left-0 z-10 px-1.5 py-2 border border-border font-black truncate max-w-[80px] border-r-border shadow-[2px_0_10px_-4px_rgba(0,0,0,0.1)] text-foreground transition-colors",
+                                                idx % 2 !== 0 ? "bg-orange-100/50" : "bg-orange-50/40"
                                             )}>
                                                 {ins.name}
                                             </td>
