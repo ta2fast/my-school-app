@@ -666,11 +666,11 @@ function AttendanceContent() {
                                     {instructors.map((ins, idx) => (
                                         <tr key={ins.id} className={cn(
                                             "hover:bg-orange-500/10 transition-colors border-b border-orange-100/50",
-                                            idx % 2 !== 0 ? "bg-orange-100/30" : "bg-orange-50/20"
+                                            idx % 2 !== 0 ? "bg-orange-100/40" : "bg-background"
                                         )}>
                                             <td className={cn(
                                                 "sticky left-0 z-10 px-1.5 py-2 border border-border font-black truncate max-w-[80px] border-r-border shadow-[2px_0_10px_-4px_rgba(0,0,0,0.1)] text-foreground transition-colors",
-                                                idx % 2 !== 0 ? "bg-orange-100/50" : "bg-orange-50/40"
+                                                idx % 2 !== 0 ? "bg-orange-100/60" : "bg-background"
                                             )}>
                                                 {ins.name}
                                             </td>
