@@ -14,9 +14,9 @@ const GROUPS = [
 ]
 
 const CATEGORIES_BY_GROUP: Record<string, string[]> = {
-    event: ['イベント・体験会報酬', '交通費(イベント)', '備品(イベント)', 'その他(イベント)'],
-    school: ['スクール月謝収入', 'スタジオ会場代', '講師用備品', 'その他(スクール)'],
-    pool: ['チームプール金', 'その他']
+    event: ['イベント・体験会報酬'],
+    school: ['スクール月謝収入'],
+    pool: ['チームプール金']
 }
 
 interface TransactionFormProps {
@@ -160,6 +160,11 @@ export function TransactionForm({ onSubmit, onDelete, onCancel, loading, titleSu
                         <option key={cat} value={cat}>{cat}</option>
                     ))}
                 </select>
+                {group === 'school' && (
+                    <p className="text-[10px] font-bold text-amber-500 ml-1 mt-1">
+                        ※スクール月謝は「月謝」ページから自動で登録されます。
+                    </p>
+                )}
             </div>
 
             <div className="space-y-2">

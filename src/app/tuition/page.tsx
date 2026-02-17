@@ -141,14 +141,16 @@ export default function TuitionPage() {
                 .insert({
                     date: new Date().toISOString().split('T')[0],
                     type: 'income',
-                    category: '月謝',
+                    group: 'school',
+                    category: 'スクール月謝収入',
                     amount: student.calculatedAmount,
-                    title: `${student.name} ${selectedMonth.split('-')[1]}月分月謝`,
-                    memo: `出席日数: ${student.daysCount}日`
+                    title: `月謝受領: ${student.name}`,
+                    memo: `${selectedMonth.split('-')[1]}月分 (出席: ${student.daysCount}日)`
                 })
 
             if (txError) throw txError
 
+            alert('会計にも反映されました')
             fetchData()
         } catch (error) {
             console.error('Error processing payment:', error)
