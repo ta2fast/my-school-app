@@ -14,6 +14,7 @@ interface Transaction {
     date: string
     type: 'income' | 'expense'
     category: string
+    group?: 'event' | 'school' | 'pool'
     amount: number
     title: string
     memo?: string
@@ -25,7 +26,14 @@ export default function AccountingPage() {
     const [showForm, setShowForm] = useState(false)
     const [editingTx, setEditingTx] = useState<Transaction | null>(null)
     const [defaultType, setDefaultType] = useState<'income' | 'expense'>('income')
-    const [stats, setStats] = useState({ balance: 0, incomeTotal: 0, expenseTotal: 0 })
+    const [stats, setStats] = useState({
+        balance: 0,
+        incomeTotal: 0,
+        expenseTotal: 0,
+        eventBalance: 0,
+        schoolBalance: 0,
+        poolBalance: 0
+    })
     const [currentMonth, setCurrentMonth] = useState(() => {
         const now = new Date()
         return new Date(now.getFullYear(), now.getMonth(), 1)
@@ -48,9 +56,30 @@ export default function AccountingPage() {
             const uniqueTitles = Array.from(new Set(txs.map(t => t.title))).filter(Boolean) as string[]
             setTitleSuggestions(uniqueTitles)
 
-            // 全体の残高計算
+            // 全体の計算
             const balance = txs.reduce((acc, curr) =>
                 curr.type === 'income' ? acc + curr.amount : acc - curr.amount, 0)
+
+            const eventBalance = txs.reduce((acc, curr) => {
+                if (curr.group === 'event' || curr.category === 'イベント・体験会報酬') {
+                    return curr.type === 'income' ? acc + curr.amount : acc - curr.amount
+                }
+                return acc
+            }, 0)
+
+            const schoolBalance = txs.reduce((acc, curr) => {
+                if (curr.group === 'school' || curr.category === 'スクール月謝収入') {
+                    return curr.type === 'income' ? acc + curr.amount : acc - curr.amount
+                }
+                return acc
+            }, 0)
+
+            const poolBalance = txs.reduce((acc, curr) => {
+                if (curr.group === 'pool' || curr.category === 'チームプール金') {
+                    return curr.type === 'income' ? acc + curr.amount : acc - curr.amount
+                }
+                return acc
+            }, 0)
 
             // 選択された月の集計
             const year = currentMonth.getFullYear()
@@ -62,7 +91,7 @@ export default function AccountingPage() {
             const incomeTotal = monthTxs.filter(t => t.type === 'income').reduce((acc, curr) => acc + curr.amount, 0)
             const expenseTotal = monthTxs.filter(t => t.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0)
 
-            setStats({ balance, incomeTotal, expenseTotal })
+            setStats({ balance, incomeTotal, expenseTotal, eventBalance, schoolBalance, poolBalance })
         } catch (error) {
             console.error('Error fetching transactions:', error)
         } finally {
@@ -243,6 +272,9 @@ export default function AccountingPage() {
                 ) : (
                     <AccountingDashboard
                         balance={stats.balance}
+                        eventBalance={stats.eventBalance}
+                        schoolBalance={stats.schoolBalance}
+                        poolBalance={stats.poolBalance}
                         incomeTotal={stats.incomeTotal}
                         expenseTotal={stats.expenseTotal}
                         onIncomeClick={() => openForAdd('income')}
@@ -284,10 +316,19 @@ export default function AccountingPage() {
                             filteredTransactions.map((tx) => (
                                 <div key={tx.id} className="group flex items-center justify-between p-4 bg-muted/20 hover:bg-muted/40 border border-border/30 rounded-2xl transition-all">
                                     <div className="flex flex-col gap-1 flex-1">
-                                        <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-1">
-                                            <Calendar className="h-3 w-3" />
-                                            {tx.date}
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-1">
+                                                <Calendar className="h-3 w-3" />
+                                                {tx.date}
+                                            </span>
+                                            {tx.group === 'event' || tx.category === 'イベント・体験会報酬' ? (
+                                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 uppercase tracking-tighter">Event</span>
+                                            ) : tx.group === 'school' || tx.category === 'スクール月謝収入' ? (
+                                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-500 border border-amber-500/30 uppercase tracking-tighter">School</span>
+                                            ) : (tx.group === 'pool' || tx.category === 'チームプール金') && (
+                                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-zinc-500/20 text-zinc-400 border border-zinc-500/30 uppercase tracking-tighter">Pool</span>
+                                            )}
+                                        </div>
                                         <h3 className="font-bold text-sm leading-none">{tx.title}</h3>
                                         {tx.memo && <p className="text-xs text-muted-foreground italic truncate max-w-[150px]">{tx.memo}</p>}
                                     </div>
