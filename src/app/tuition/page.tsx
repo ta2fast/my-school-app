@@ -121,8 +121,39 @@ export default function TuitionPage() {
 
         setProcessingId(student.id)
         try {
-            // 1. Update/Insert tuition_payments
-            const { data: paymentData, error: paymentError } = await supabase
+            // Check if transaction already exists for this student and month to prevent duplicates
+            const txTitle = `月謝受領: ${student.name}`
+            const txMemo = `${selectedMonth.split('-')[1]}月分 (出席: ${student.daysCount}日)`
+
+            const { data: existingTx } = await supabase
+                .from('transactions')
+                .select('id')
+                .eq('title', txTitle)
+                .eq('memo', txMemo)
+                .eq('amount', student.calculatedAmount)
+                .single()
+
+            if (existingTx) {
+                console.log('Transaction already exists, skipping transaction creation.')
+            } else {
+                // 1. Add income result to transactions
+                const { error: txError } = await supabase
+                    .from('transactions')
+                    .insert({
+                        date: new Date().toISOString().split('T')[0],
+                        type: 'income',
+                        group: 'school',
+                        category: 'スクール月謝収入',
+                        amount: student.calculatedAmount,
+                        title: txTitle,
+                        memo: txMemo
+                    })
+
+                if (txError) throw txError
+            }
+
+            // 2. Update/Insert tuition_payments
+            const { error: paymentError } = await supabase
                 .from('tuition_payments')
                 .upsert({
                     student_id: student.id,
@@ -131,29 +162,50 @@ export default function TuitionPage() {
                     is_paid: true,
                     paid_at: new Date().toISOString()
                 }, { onConflict: 'student_id,month' })
-                .select()
 
             if (paymentError) throw paymentError
-
-            // 2. Add income result to transactions
-            const { error: txError } = await supabase
-                .from('transactions')
-                .insert({
-                    date: new Date().toISOString().split('T')[0],
-                    type: 'income',
-                    group: 'school',
-                    category: 'スクール月謝収入',
-                    amount: student.calculatedAmount,
-                    title: `月謝受領: ${student.name}`,
-                    memo: `${selectedMonth.split('-')[1]}月分 (出席: ${student.daysCount}日)`
-                })
-
-            if (txError) throw txError
 
             alert('会計にも反映されました')
             fetchData()
         } catch (error) {
             console.error('Error processing payment:', error)
+            alert('処理に失敗しました。')
+        } finally {
+            setProcessingId(null)
+        }
+    }, [selectedMonth, fetchData])
+
+    const handleUnmarkAsPaid = useCallback(async (student: any) => {
+        if (!confirm(`${student.name}さんの月謝回収記録を取り消しますか？\n会計ページの記録も削除されます。`)) return
+
+        setProcessingId(student.id)
+        try {
+            // 1. Delete from tuition_payments
+            const { error: paymentError } = await supabase
+                .from('tuition_payments')
+                .delete()
+                .eq('student_id', student.id)
+                .eq('month', selectedMonth)
+
+            if (paymentError) throw paymentError
+
+            // 2. Delete corresponding transaction
+            const txTitle = `月謝受領: ${student.name}`
+            const txMemo = `${selectedMonth.split('-')[1]}月分 (出席: ${student.daysCount}日)`
+
+            const { error: txError } = await supabase
+                .from('transactions')
+                .delete()
+                .eq('title', txTitle)
+                .eq('memo', txMemo)
+                .eq('category', 'スクール月謝収入')
+
+            if (txError) throw txError
+
+            alert('取り消しました')
+            fetchData()
+        } catch (error) {
+            console.error('Error unmarking payment:', error)
             alert('処理に失敗しました。')
         } finally {
             setProcessingId(null)
@@ -287,9 +339,18 @@ export default function TuitionPage() {
                                                 {processingId === student.id ? "..." : "回収済にする"}
                                             </Button>
                                         ) : (
-                                            <div className="flex items-center justify-end gap-1.5 text-emerald-500">
-                                                <CheckCircle2 className="h-4 w-4" />
-                                                <span className="text-[10px] font-black uppercase tracking-widest">Completed</span>
+                                            <div className="flex flex-col items-end gap-1">
+                                                <div className="flex items-center justify-end gap-1.5 text-emerald-500">
+                                                    <CheckCircle2 className="h-4 w-4" />
+                                                    <span className="text-[10px] font-black uppercase tracking-widest">Completed</span>
+                                                </div>
+                                                <button
+                                                    onClick={() => handleUnmarkAsPaid(student)}
+                                                    disabled={processingId === student.id}
+                                                    className="text-[9px] font-bold text-muted-foreground hover:text-rose-500 underline underline-offset-2 transition-colors"
+                                                >
+                                                    取り消す
+                                                </button>
                                             </div>
                                         )}
                                     </div>
