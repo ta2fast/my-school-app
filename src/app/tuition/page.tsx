@@ -142,7 +142,6 @@ export default function TuitionPage() {
                     .insert({
                         date: new Date().toISOString().split('T')[0],
                         type: 'income',
-                        group: 'school',
                         category: 'スクール月謝',
                         amount: student.calculatedAmount,
                         title: txTitle,

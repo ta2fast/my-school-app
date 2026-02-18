@@ -66,7 +66,6 @@ export function TransactionForm({ onSubmit, onDelete, onCancel, loading, titleSu
         const payload: any = {
             date: formattedDate,
             type,
-            group,
             title,
             amount: parseInt(amount),
             category,
