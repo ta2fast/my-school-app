@@ -5,9 +5,10 @@ import { supabase } from '@/lib/supabase'
 import { AccountingDashboard } from '@/components/AccountingDashboard'
 import { TransactionForm } from '@/components/TransactionForm'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Receipt, Calendar, Tag, ChevronLeft, ChevronRight, Edit2, Download } from 'lucide-react'
+import { Receipt, Calendar, Tag, ChevronLeft, ChevronRight, Edit2, Download, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { YearlyBalanceModal } from '@/components/YearlyBalanceModal'
 
 interface Transaction {
     id: string
@@ -24,6 +25,7 @@ export default function AccountingPage() {
     const [transactions, setTransactions] = useState<Transaction[]>([])
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
+    const [showYearlyModal, setShowYearlyModal] = useState(false)
     const [editingTx, setEditingTx] = useState<Transaction | null>(null)
     const [defaultType, setDefaultType] = useState<'income' | 'expense'>('income')
     const [stats, setStats] = useState({
@@ -246,13 +248,22 @@ export default function AccountingPage() {
                     <h1 className="text-3xl font-black tracking-tighter text-foreground uppercase italic">Accounting</h1>
                     <p className="text-xs font-bold text-muted-foreground tracking-widest uppercase">Team Treasury Management</p>
                 </div>
-                <Button
-                    onClick={handleDownloadCSV}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-10 px-4 rounded-xl shadow-lg shadow-emerald-900/20 transition-all flex items-center gap-2"
-                >
-                    <Download className="h-4 w-4" />
-                    <span className="text-xs uppercase tracking-wider">CSV</span>
-                </Button>
+                <div className="flex gap-2">
+                    <Button
+                        onClick={() => setShowYearlyModal(true)}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-10 px-4 rounded-xl shadow-lg shadow-indigo-900/20 transition-all flex items-center gap-2"
+                    >
+                        <Calendar className="h-4 w-4" />
+                        <span className="text-xs uppercase tracking-wider">年間収支</span>
+                    </Button>
+                    <Button
+                        onClick={handleDownloadCSV}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-10 px-4 rounded-xl shadow-lg shadow-emerald-900/20 transition-all flex items-center gap-2"
+                    >
+                        <Download className="h-4 w-4" />
+                        <span className="text-xs uppercase tracking-wider">CSV</span>
+                    </Button>
+                </div>
             </header>
 
             <div className="space-y-6">
@@ -327,11 +338,11 @@ export default function AccountingPage() {
                                                 <Calendar className="h-3 w-3" />
                                                 {tx.date}
                                             </span>
-                                            {tx.group === 'event' || tx.category === 'イベント・体験会報酬' ? (
+                                            {tx.category === 'イベント出演費' || tx.category === 'イベント・体験会報酬' ? (
                                                 <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 uppercase tracking-tighter">Event</span>
-                                            ) : tx.group === 'school' || tx.category === 'スクール月謝収入' ? (
+                                            ) : tx.category === 'スクール月謝' || tx.category === 'スクール月謝収入' ? (
                                                 <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-500 border border-amber-500/30 uppercase tracking-tighter">School</span>
-                                            ) : (tx.group === 'pool' || tx.category === 'チームプール金') && (
+                                            ) : (
                                                 <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-zinc-500/20 text-zinc-400 border border-zinc-500/30 uppercase tracking-tighter">Pool</span>
                                             )}
                                         </div>
@@ -367,6 +378,11 @@ export default function AccountingPage() {
                     </div>
                 </section>
             </div>
+            <YearlyBalanceModal
+                isOpen={showYearlyModal}
+                onClose={() => setShowYearlyModal(false)}
+                transactions={transactions}
+            />
         </div>
     )
 }
