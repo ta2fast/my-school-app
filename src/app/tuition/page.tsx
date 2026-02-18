@@ -143,7 +143,7 @@ export default function TuitionPage() {
                         date: new Date().toISOString().split('T')[0],
                         type: 'income',
                         group: 'school',
-                        category: 'スクール月謝収入',
+                        category: 'スクール月謝',
                         amount: student.calculatedAmount,
                         title: txTitle,
                         memo: txMemo
@@ -198,7 +198,7 @@ export default function TuitionPage() {
                 .delete()
                 .eq('title', txTitle)
                 .eq('memo', txMemo)
-                .eq('category', 'スクール月謝収入')
+                .eq('category', 'スクール月謝')
 
             if (txError) throw txError
 

@@ -61,21 +61,21 @@ export default function AccountingPage() {
                 curr.type === 'income' ? acc + curr.amount : acc - curr.amount, 0)
 
             const eventBalance = txs.reduce((acc, curr) => {
-                if (curr.group === 'event' || curr.category === 'イベント・体験会報酬') {
+                if (curr.category === 'イベント出演費') {
                     return curr.type === 'income' ? acc + curr.amount : acc - curr.amount
                 }
                 return acc
             }, 0)
 
             const schoolBalance = txs.reduce((acc, curr) => {
-                if (curr.group === 'school' || curr.category === 'スクール月謝収入') {
+                if (curr.category === 'スクール月謝') {
                     return curr.type === 'income' ? acc + curr.amount : acc - curr.amount
                 }
                 return acc
             }, 0)
 
             const poolBalance = txs.reduce((acc, curr) => {
-                if (curr.group === 'pool' || curr.category === 'チームプール金') {
+                if (curr.category !== 'イベント出演費' && curr.category !== 'スクール月謝') {
                     return curr.type === 'income' ? acc + curr.amount : acc - curr.amount
                 }
                 return acc
