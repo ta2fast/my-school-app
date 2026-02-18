@@ -131,7 +131,7 @@ export default function TuitionPage() {
                 .eq('title', txTitle)
                 .eq('memo', txMemo)
                 .eq('amount', student.calculatedAmount)
-                .single()
+                .maybeSingle()
 
             if (existingTx) {
                 console.log('Transaction already exists, skipping transaction creation.')
@@ -198,7 +198,7 @@ export default function TuitionPage() {
                 .delete()
                 .eq('title', txTitle)
                 .eq('memo', txMemo)
-                .eq('category', 'スクール月謝')
+                .in('category', ['スクール月謝', 'スクール月謝収入'])
 
             if (txError) throw txError
 
