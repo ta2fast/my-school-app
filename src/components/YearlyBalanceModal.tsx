@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { X, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -23,167 +23,153 @@ interface YearlyBalanceModalProps {
 export function YearlyBalanceModal({ isOpen, onClose, transactions }: YearlyBalanceModalProps) {
     const [viewYear, setViewYear] = useState(new Date().getFullYear())
 
-    const yearlyData = useMemo(() => {
-        const months = Array.from({ length: 12 }, (_, i) => i + 1)
-        let cumulativeBalance = 0
-
-        // 一年前までの全取引を集計して、年初の繰越金を計算
+    const annualSummary = useMemo(() => {
+        // 年初の繰越金を計算
         const previousTransactions = transactions.filter(t => {
             const d = new Date(t.date)
             return d.getFullYear() < viewYear
         })
-        cumulativeBalance = previousTransactions.reduce((acc, curr) =>
+        const carryoverBalance = previousTransactions.reduce((acc, curr) =>
             curr.type === 'income' ? acc + curr.amount : acc - curr.amount, 0)
 
-        const startOfYearBalance = cumulativeBalance
+        // 当年の取引
+        const currentYearTxs = transactions
+            .filter(t => {
+                const d = new Date(t.date)
+                return d.getFullYear() === viewYear
+            })
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
-        const data = months.map(month => {
-            const yearStr = String(viewYear)
-            const monthStr = String(month).padStart(2, '0')
-            const prefix = `${yearStr}-${monthStr}`
+        const totalIncome = currentYearTxs
+            .filter(t => t.type === 'income')
+            .reduce((acc, curr) => acc + curr.amount, 0) + carryoverBalance
 
-            const currentMonthTxs = transactions.filter(t => t.date.startsWith(prefix))
-
-            const income = currentMonthTxs
-                .filter(t => t.type === 'income')
-                .reduce((acc, curr) => acc + curr.amount, 0)
-
-            const expense = currentMonthTxs
-                .filter(t => t.type === 'expense')
-                .reduce((acc, curr) => acc + curr.amount, 0)
-
-            const balance = income - expense
-            cumulativeBalance += balance
-
-            return {
-                month,
-                income,
-                expense,
-                balance,
-                cumulative: cumulativeBalance
-            }
-        })
+        const totalExpense = currentYearTxs
+            .filter(t => t.type === 'expense')
+            .reduce((acc, curr) => acc + curr.amount, 0)
 
         return {
-            months: data,
-            startOfYearBalance,
-            annualProfit: cumulativeBalance - startOfYearBalance
+            carryoverBalance,
+            transactions: currentYearTxs,
+            totalIncome,
+            totalExpense,
+            balance: totalIncome - totalExpense
         }
     }, [viewYear, transactions])
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('ja-JP').format(amount) + '円'
+        return new Intl.NumberFormat('ja-JP').format(amount)
+    }
+
+    const formatDate = (dateStr: string) => {
+        const d = new Date(dateStr)
+        return `${d.getMonth() + 1}月${d.getDate()}日`
     }
 
     if (!isOpen) return null
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-zinc-900 border border-zinc-800 w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white text-zinc-900 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] border-4 border-zinc-200">
                 {/* Header */}
-                <header className="p-6 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/50">
+                <header className="p-4 border-b-2 border-zinc-100 flex items-center justify-between bg-zinc-50">
                     <div>
-                        <h2 className="text-xl font-black tracking-tighter text-white uppercase italic flex items-center gap-2">
-                            Annual Ledger <span className="text-indigo-500">{viewYear}</span>
+                        <h2 className="text-xl font-bold text-zinc-800 flex items-center gap-2">
+                            年間総まとめ <span className="text-indigo-600">{viewYear}</span>
                         </h2>
-                        <p className="text-[10px] font-bold text-zinc-500 tracking-[0.2em] uppercase">Yearly Balance Statement</p>
+                        <p className="text-[10px] font-bold text-zinc-400 tracking-widest uppercase">Annual Financial Ledger</p>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full hover:bg-zinc-800 text-zinc-400">
+                    <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full hover:bg-zinc-200 text-zinc-500">
                         <X className="h-5 w-5" />
                     </Button>
                 </header>
 
                 {/* Year Selector */}
-                <div className="px-6 py-4 flex items-center justify-between bg-zinc-800/30">
-                    <Button variant="ghost" size="icon" onClick={() => setViewYear(v => v - 1)} className="text-zinc-400">
-                        <ChevronLeft className="h-5 w-5" />
+                <div className="px-6 py-2 flex items-center justify-between border-b border-zinc-100 bg-white">
+                    <Button variant="ghost" size="icon" onClick={() => setViewYear(v => v - 1)} className="text-zinc-400 h-8 w-8">
+                        <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    <span className="font-mono font-black text-xl text-white">{viewYear}年</span>
-                    <Button variant="ghost" size="icon" onClick={() => setViewYear(v => v + 1)} className="text-zinc-400">
-                        <ChevronRight className="h-5 w-5" />
+                    <span className="font-bold text-lg text-zinc-800">{viewYear}年</span>
+                    <Button variant="ghost" size="icon" onClick={() => setViewYear(v => v + 1)} className="text-zinc-400 h-8 w-8">
+                        <ChevronRight className="h-4 w-4" />
                     </Button>
                 </div>
 
-                {/* Table */}
-                <div className="flex-1 overflow-auto p-4 custom-scrollbar">
-                    <table className="w-full text-left border-separate border-spacing-y-2">
-                        <thead>
-                            <tr className="text-[10px] font-black uppercase tracking-widest text-zinc-500 px-3">
-                                <th className="px-3 pb-2 text-center">月</th>
-                                <th className="px-3 pb-2">収入</th>
-                                <th className="px-3 pb-2">支出</th>
-                                <th className="px-3 pb-2 text-right">累計</th>
+                {/* Scrollable Table Area */}
+                <div className="flex-1 overflow-auto p-0 custom-scrollbar bg-white">
+                    <table className="w-full text-left border-collapse text-sm">
+                        <thead className="sticky top-0 bg-zinc-50 z-10 shadow-sm">
+                            <tr className="border-b border-zinc-200">
+                                <th className="py-2 px-4 font-bold text-zinc-500 w-24">日付</th>
+                                <th className="py-2 px-4 font-bold text-zinc-500 w-28 text-right">収入</th>
+                                <th className="py-2 px-4 font-bold text-rose-500 w-28 text-right">支出</th>
+                                <th className="py-2 px-4 font-bold text-zinc-500">備考</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {yearlyData.months.map((data) => (
-                                <tr key={data.month} className="group bg-zinc-800/20 hover:bg-zinc-800/40 transition-colors">
-                                    <td className="py-3 px-3 rounded-l-2xl text-center border-l border-t border-b border-zinc-800/50">
-                                        <span className="font-mono font-black text-zinc-400">{data.month}月</span>
+                        <tbody className="divide-y divide-zinc-100">
+                            {/* Carryover Row */}
+                            <tr className="bg-zinc-50/50">
+                                <td className="py-3 px-4 font-medium text-zinc-400"></td>
+                                <td className="py-3 px-4 text-right font-bold text-zinc-800">
+                                    {formatCurrency(annualSummary.carryoverBalance)}
+                                </td>
+                                <td className="py-3 px-4 text-right"></td>
+                                <td className="py-3 px-4 font-bold text-zinc-800">
+                                    {viewYear}年 繰越
+                                </td>
+                            </tr>
+
+                            {/* Transactions */}
+                            {annualSummary.transactions.map((tx) => (
+                                <tr key={tx.id} className="hover:bg-zinc-50 transition-colors">
+                                    <td className="py-2.5 px-4 tabular-nums text-zinc-500 font-medium">
+                                        {formatDate(tx.date)}
                                     </td>
-                                    <td className="py-3 px-3 border-t border-b border-zinc-800/50">
-                                        <div className="flex flex-col">
-                                            <span className="text-xs font-mono font-bold text-emerald-500">+{formatCurrency(data.income)}</span>
-                                            <span className="text-[9px] text-zinc-600 font-mono">INCOME</span>
-                                        </div>
+                                    <td className="py-2.5 px-4 text-right font-medium text-zinc-800">
+                                        {tx.type === 'income' ? formatCurrency(tx.amount) : ''}
                                     </td>
-                                    <td className="py-3 px-3 border-t border-b border-zinc-800/50">
-                                        <div className="flex flex-col">
-                                            <span className="text-xs font-mono font-bold text-rose-500">-{formatCurrency(data.expense)}</span>
-                                            <span className="text-[9px] text-zinc-600 font-mono">EXPENSE</span>
-                                        </div>
+                                    <td className="py-2.5 px-4 text-right font-bold text-rose-500">
+                                        {tx.type === 'expense' ? formatCurrency(tx.amount) : ''}
                                     </td>
-                                    <td className="py-3 px-3 rounded-r-2xl text-right border-r border-t border-b border-zinc-800/50">
-                                        <div className="flex flex-col items-end">
-                                            <span className={cn(
-                                                "text-sm font-mono font-black tabular-nums",
-                                                data.cumulative >= 0 ? "text-white" : "text-rose-400"
-                                            )}>
-                                                {formatCurrency(data.cumulative)}
-                                            </span>
-                                            <div className="flex items-center gap-1">
-                                                {data.balance > 0 ? (
-                                                    <TrendingUp className="h-2.5 w-2.5 text-emerald-500" />
-                                                ) : data.balance < 0 ? (
-                                                    <TrendingDown className="h-2.5 w-2.5 text-rose-500" />
-                                                ) : (
-                                                    <Minus className="h-2.5 w-2.5 text-zinc-600" />
-                                                )}
-                                                <span className={cn(
-                                                    "text-[9px] font-mono font-bold",
-                                                    data.balance >= 0 ? "text-zinc-500" : "text-rose-500"
-                                                )}>
-                                                    {data.balance >= 0 ? '+' : ''}{formatCurrency(data.balance)}
-                                                </span>
-                                            </div>
-                                        </div>
+                                    <td className="py-2.5 px-4 text-zinc-700 font-medium max-w-xs truncate">
+                                        {tx.title}
                                     </td>
                                 </tr>
                             ))}
+
+                            {/* Empty state */}
+                            {annualSummary.transactions.length === 0 && (
+                                <tr>
+                                    <td colSpan={4} className="py-20 text-center text-zinc-400 font-bold italic">
+                                        No data found for this year.
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
 
-                {/* Footer / Summary */}
-                <footer className="p-6 bg-zinc-950/50 border-t border-zinc-800">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest leading-none mb-1">Year-End Balance</p>
-                            <h3 className="text-2xl font-black text-white font-mono tracking-tighter">
-                                {formatCurrency(yearlyData.months[11].cumulative)}
-                            </h3>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest leading-none mb-1">Annual Profit/Loss</p>
-                            <p className={cn(
-                                "text-lg font-black font-mono",
-                                yearlyData.annualProfit >= 0 ? "text-emerald-500" : "text-rose-500"
-                            )}>
-                                {yearlyData.annualProfit >= 0 ? '+' : ''}
-                                {formatCurrency(yearlyData.annualProfit)}
-                            </p>
-                        </div>
-                    </div>
+                {/* Bottom Totals */}
+                <footer className="p-4 bg-zinc-50 border-t-2 border-zinc-200">
+                    <table className="w-full text-sm">
+                        <tbody>
+                            <tr className="font-black text-lg">
+                                <td className="w-24 px-4"></td>
+                                <td className="w-28 px-4 text-right tabular-nums text-zinc-800">
+                                    {formatCurrency(annualSummary.totalIncome)}
+                                </td>
+                                <td className="w-28 px-4 text-right tabular-nums text-rose-500">
+                                    {formatCurrency(annualSummary.totalExpense)}
+                                </td>
+                                <td className="px-4 text-right text-indigo-600">
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-[10px] text-zinc-400 uppercase tracking-tighter">合計残高</span>
+                                        {formatCurrency(annualSummary.balance)}円
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </footer>
             </div>
         </div>
