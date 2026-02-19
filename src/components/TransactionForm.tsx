@@ -127,7 +127,7 @@ export function TransactionForm({ onSubmit, onDelete, onCancel, loading, titleSu
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4">
                 <div className="space-y-2">
                     <Label htmlFor="t-date" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">日付</Label>
                     <DatePicker

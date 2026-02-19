@@ -57,15 +57,14 @@ export function DatePicker({
 
     const handleMonthChange = (month: string) => {
         const mStr = month.padStart(2, "0")
+        const y = currentYear || String(new Date().getFullYear())
         if (type === "date") {
-            const y = currentYear || String(new Date().getFullYear())
             const d = currentDay.padStart(2, "0") || "01"
             // Ensure day is valid for the new month
             const lastDay = new Date(parseInt(y), parseInt(month), 0).getDate()
-            const safeDay = Math.min(parseInt(d), lastDay).toString().padStart(2, "0")
+            const safeDay = Math.min(parseInt(d) || 1, lastDay).toString().padStart(2, "0")
             onChange(`${y}-${mStr}-${safeDay}`)
         } else {
-            const y = currentYear || String(new Date().getFullYear())
             onChange(`${y}-${mStr}`)
         }
     }
@@ -81,11 +80,11 @@ export function DatePicker({
         <div className={cn("space-y-2 w-full", className)}>
             <div className="flex gap-2">
                 {/* Year Select */}
-                <div className="flex-[2]">
+                <div className="flex-[3]">
                     <select
                         value={currentYear}
                         onChange={(e) => handleYearChange(e.target.value)}
-                        className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                         required={required}
                     >
                         <option value="">年</option>
@@ -101,11 +100,11 @@ export function DatePicker({
                 </div>
 
                 {/* Month Select */}
-                <div className="flex-1">
+                <div className="flex-[2]">
                     <select
                         value={currentMonth}
                         onChange={(e) => handleMonthChange(e.target.value)}
-                        className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                         required={required}
                     >
                         <option value="">月</option>
@@ -115,11 +114,11 @@ export function DatePicker({
 
                 {/* Day Select */}
                 {type === "date" && (
-                    <div className="flex-1">
+                    <div className="flex-[2]">
                         <select
                             value={currentDay}
                             onChange={(e) => handleDayChange(e.target.value)}
-                            className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                            className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                             required={required}
                         >
                             <option value="">日</option>
