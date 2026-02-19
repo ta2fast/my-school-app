@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ChevronLeft, ChevronRight, Wallet, CheckCircle2, User, CalendarDays, Coins } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { DatePicker } from '@/components/ui/DatePicker'
 
 interface Student {
     id: string
@@ -236,7 +237,14 @@ export default function TuitionPage() {
                             <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => changeMonth(-1)}>
                                 <ChevronLeft className="h-4 w-4" />
                             </Button>
-                            <span className="text-sm font-bold w-28 text-center">{monthLabel}</span>
+                            <div className="w-32">
+                                <DatePicker
+                                    value={selectedMonth}
+                                    onChange={setSelectedMonth}
+                                    type="month"
+                                    className="space-y-0"
+                                />
+                            </div>
                             <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => changeMonth(1)}>
                                 <ChevronRight className="h-4 w-4" />
                             </Button>

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
+import { DatePicker } from '@/components/ui/DatePicker'
 
 const GROUPS = [
     { id: 'event', label: '全員対象(イベント)', color: 'bg-indigo-500' },
@@ -55,16 +56,8 @@ export function TransactionForm({ onSubmit, onDelete, onCancel, loading, titleSu
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        // 日付の簡易補完 (YYYYMMDD -> YYYY-MM-DD)
-        let formattedDate = date.replace(/[^\d]/g, '')
-        if (formattedDate.length === 8) {
-            formattedDate = `${formattedDate.slice(0, 4)}-${formattedDate.slice(4, 6)}-${formattedDate.slice(6, 8)}`
-        } else {
-            formattedDate = date
-        }
-
         const payload: any = {
-            date: formattedDate,
+            date,
             type,
             title,
             amount: parseInt(amount),
@@ -137,14 +130,11 @@ export function TransactionForm({ onSubmit, onDelete, onCancel, loading, titleSu
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="t-date" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">日付</Label>
-                    <Input
+                    <DatePicker
                         id="t-date"
-                        type="text"
-                        placeholder="2024-02-01"
                         value={date}
-                        onChange={(e) => setDate(e.target.value)}
+                        onChange={setDate}
                         required
-                        className="h-12 rounded-2xl bg-background/50 border-border/50 focus:bg-background"
                     />
                 </div>
                 <div className="space-y-2">

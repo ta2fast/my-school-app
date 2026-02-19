@@ -15,6 +15,7 @@ import {
     DrawerFooter,
     DrawerClose,
 } from '@/components/ui/drawer'
+import { DatePicker } from '@/components/ui/DatePicker'
 
 interface Student {
     id: string
@@ -432,13 +433,13 @@ function AttendanceContent() {
                                     <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => changeDate(-1)}>
                                         <ChevronLeft className="h-4 w-4" />
                                     </Button>
-                                    <input
-                                        type="date"
-                                        className="bg-transparent border-none text-sm font-bold focus:ring-0 w-32 text-center text-foreground dark:invert-0"
-                                        value={selectedDate}
-                                        onChange={(e) => setSelectedDate(e.target.value)}
-                                        disabled={loading}
-                                    />
+                                    <div className="w-32">
+                                        <DatePicker
+                                            value={selectedDate}
+                                            onChange={setSelectedDate}
+                                            className="space-y-0"
+                                        />
+                                    </div>
                                     <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => changeDate(1)}>
                                         <ChevronRight className="h-4 w-4" />
                                     </Button>
@@ -448,13 +449,14 @@ function AttendanceContent() {
                                     <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => changeMonth(-1)}>
                                         <ChevronLeft className="h-4 w-4" />
                                     </Button>
-                                    <input
-                                        type="month"
-                                        className="bg-transparent border-none text-sm font-bold focus:ring-0 w-36 text-center text-foreground dark:invert-0"
-                                        value={selectedMonth}
-                                        onChange={(e) => setSelectedMonth(e.target.value)}
-                                        disabled={loading}
-                                    />
+                                    <div className="w-36">
+                                        <DatePicker
+                                            value={selectedMonth}
+                                            onChange={setSelectedMonth}
+                                            type="month"
+                                            className="space-y-0"
+                                        />
+                                    </div>
                                     <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => changeMonth(1)}>
                                         <ChevronRight className="h-4 w-4" />
                                     </Button>

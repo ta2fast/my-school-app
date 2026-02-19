@@ -26,6 +26,7 @@ import {
     DrawerFooter,
     DrawerClose,
 } from '@/components/ui/drawer'
+import { DatePicker } from '@/components/ui/DatePicker'
 
 interface Event {
     id: string
@@ -298,11 +299,9 @@ export default function EventsPage() {
                             <div className="space-y-3">
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Event Date</label>
-                                    <input
-                                        type="date"
-                                        className="w-full bg-muted/50 border border-border/50 rounded-2xl h-12 px-4 font-bold text-sm focus:ring-2 focus:ring-primary/20 outline-none"
-                                        value={formData.date}
-                                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                    <DatePicker
+                                        value={formData.date || ''}
+                                        onChange={(val) => setFormData({ ...formData, date: val })}
                                     />
                                 </div>
                                 <div className="space-y-1">
