@@ -237,13 +237,8 @@ export default function TuitionPage() {
                             <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => changeMonth(-1)}>
                                 <ChevronLeft className="h-4 w-4" />
                             </Button>
-                            <div className="w-32">
-                                <DatePicker
-                                    value={selectedMonth}
-                                    onChange={setSelectedMonth}
-                                    type="month"
-                                    className="space-y-0"
-                                />
+                            <div className="w-32 text-center font-black tracking-tight text-sm">
+                                {selectedMonth.replace('-', '年')}月
                             </div>
                             <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => changeMonth(1)}>
                                 <ChevronRight className="h-4 w-4" />
