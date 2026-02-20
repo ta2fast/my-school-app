@@ -1,10 +1,13 @@
 import * as React from "react"
 import { cn, getJapaneseEra } from "@/lib/utils"
+import { Calendar } from "./Calendar"
+import { CalendarIcon } from "lucide-react"
 
 interface DatePickerProps {
     value: string // YYYY-MM-DD or YYYY-MM
     onChange: (value: string) => void
     type?: "date" | "month"
+    mode?: "calendar" | "dropdown"
     className?: string
     id?: string
     required?: boolean
@@ -14,12 +17,26 @@ export function DatePicker({
     value,
     onChange,
     type = "date",
+    mode = "dropdown",
     className,
     id: providedId,
     required
 }: DatePickerProps) {
     const generatedId = React.useId()
     const id = providedId || generatedId
+    const [isCalendarOpen, setIsCalendarOpen] = React.useState(false)
+    const containerRef = React.useRef<HTMLDivElement>(null)
+
+    // Close calendar on outside click
+    React.useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+                setIsCalendarOpen(false)
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside)
+        return () => document.removeEventListener("mousedown", handleClickOutside)
+    }, [])
 
     // Parse current value
     const parts = value.split("-")
@@ -76,57 +93,101 @@ export function DatePicker({
         onChange(`${y}-${m}-${dStr}`)
     }
 
+    const handleCalendarSelect = (date: Date) => {
+        const y = date.getFullYear()
+        const m = String(date.getMonth() + 1).padStart(2, "0")
+        const d = String(date.getDate()).padStart(2, "0")
+        onChange(`${y}-${m}-${d}`)
+        setIsCalendarOpen(false)
+    }
+
+    const formattedDisplayDate = React.useMemo(() => {
+        if (!value) return "日付を選択"
+        const d = new Date(value)
+        if (isNaN(d.getTime())) return value
+        return new Intl.DateTimeFormat('ja-JP', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            weekday: 'short'
+        }).format(d)
+    }, [value])
+
     return (
-        <div className={cn("space-y-2 w-full", className)}>
-            <div className="flex gap-2">
-                {/* Year Select */}
-                <div className="flex-[3]">
-                    <select
-                        value={currentYear}
-                        onChange={(e) => handleYearChange(e.target.value)}
-                        className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                        required={required}
+        <div className={cn("relative w-full", className)} ref={containerRef}>
+            {mode === "calendar" ? (
+                <div className="space-y-2">
+                    <button
+                        type="button"
+                        onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+                        className="flex h-12 w-full items-center gap-2 rounded-xl border border-input bg-background px-3 py-2 text-sm font-black shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 hover:bg-muted/50 transition-colors italic tracking-tighter"
                     >
-                        <option value="">年</option>
-                        {years.map(y => {
-                            const era = getJapaneseEra(Number(y));
-                            return (
-                                <option key={y} value={y}>
-                                    {y}年 {era ? `(${era})` : ''}
-                                </option>
-                            )
-                        })}
-                    </select>
-                </div>
+                        <CalendarIcon className="h-4 w-4 text-indigo-600" />
+                        <span className="flex-1 text-left truncate">{formattedDisplayDate}</span>
+                    </button>
 
-                {/* Month Select */}
-                <div className="flex-[2]">
-                    <select
-                        value={currentMonth}
-                        onChange={(e) => handleMonthChange(e.target.value)}
-                        className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                        required={required}
-                    >
-                        <option value="">月</option>
-                        {months.map(m => <option key={m} value={m}>{m}月</option>)}
-                    </select>
+                    {isCalendarOpen && (
+                        <div className="absolute top-full left-0 mt-2 z-50 w-[280px]">
+                            <Calendar
+                                selected={value ? new Date(value) : undefined}
+                                onSelect={handleCalendarSelect}
+                            />
+                        </div>
+                    )}
                 </div>
+            ) : (
+                <div className="space-y-2 w-full">
+                    <div className="flex gap-2">
+                        {/* Year Select */}
+                        <div className="flex-[3]">
+                            <select
+                                value={currentYear}
+                                onChange={(e) => handleYearChange(e.target.value)}
+                                className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                required={required}
+                            >
+                                <option value="">年</option>
+                                {years.map(y => {
+                                    const era = getJapaneseEra(Number(y));
+                                    return (
+                                        <option key={y} value={y}>
+                                            {y}年 {era ? `(${era})` : ''}
+                                        </option>
+                                    )
+                                })}
+                            </select>
+                        </div>
 
-                {/* Day Select */}
-                {type === "date" && (
-                    <div className="flex-[2]">
-                        <select
-                            value={currentDay}
-                            onChange={(e) => handleDayChange(e.target.value)}
-                            className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                            required={required}
-                        >
-                            <option value="">日</option>
-                            {days.map(d => <option key={d} value={d}>{d}日</option>)}
-                        </select>
+                        {/* Month Select */}
+                        <div className="flex-[2]">
+                            <select
+                                value={currentMonth}
+                                onChange={(e) => handleMonthChange(e.target.value)}
+                                className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                required={required}
+                            >
+                                <option value="">月</option>
+                                {months.map(m => <option key={m} value={m}>{m}月</option>)}
+                            </select>
+                        </div>
+
+                        {/* Day Select */}
+                        {type === "date" && (
+                            <div className="flex-[2]">
+                                <select
+                                    value={currentDay}
+                                    onChange={(e) => handleDayChange(e.target.value)}
+                                    className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                    required={required}
+                                >
+                                    <option value="">日</option>
+                                    {days.map(d => <option key={d} value={d}>{d}日</option>)}
+                                </select>
+                            </div>
+                        )}
                     </div>
-                )}
-            </div>
+                </div>
+            )}
             {/* Hidden native input for form compatibility */}
             <input
                 id={id}

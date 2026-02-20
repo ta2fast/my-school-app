@@ -433,10 +433,11 @@ function AttendanceContent() {
                                     <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => changeDate(-1)}>
                                         <ChevronLeft className="h-4 w-4" />
                                     </Button>
-                                    <div className="w-32">
+                                    <div className="w-40">
                                         <DatePicker
                                             value={selectedDate}
                                             onChange={setSelectedDate}
+                                            mode="calendar"
                                             className="space-y-0"
                                         />
                                     </div>
@@ -874,11 +875,10 @@ function AttendanceContent() {
                         <div className="space-y-6 mt-4">
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">新しい日付</label>
-                                <input
-                                    type="date"
-                                    className="w-full bg-muted/50 border border-border/50 rounded-2xl h-14 px-4 font-black text-lg focus:ring-4 focus:ring-primary/10 outline-none"
+                                <DatePicker
                                     value={newDateValue}
-                                    onChange={(e) => setNewDateValue(e.target.value)}
+                                    onChange={setNewDateValue}
+                                    mode="calendar"
                                 />
                             </div>
                             <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20">
